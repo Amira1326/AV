@@ -90,6 +90,8 @@
   .scan-reticle{position:absolute;inset:14%;border:3px solid rgba(242,183,5,0.75);border-radius:18px;box-shadow:0 0 0 2000px rgba(0,0,0,0.35);}
   .scan-hint{position:absolute;bottom:16px;right:16px;left:16px;text-align:center;font-size:13px;background:rgba(0,0,0,0.55);padding:8px 12px;border-radius:10px;font-weight:700;}
   .scan-status{font-size:12.5px;text-align:center;opacity:.55;margin-top:10px;font-weight:700;}
+  #arCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  .scan-reticle.hidden-when-locked{transition:opacity .2s;}
 
   /* reveal overlay */
   .reveal-layer{position:fixed;inset:0;background:radial-gradient(circle at 50% 40%, rgba(124,92,209,0.35), rgba(21,15,40,0.96) 65%);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:50;text-align:center;padding:20px;}
@@ -177,8 +179,9 @@
     <a class="back-link" id="backFromScan">→ رجوع للخريطة</a>
     <div class="scan-frame">
       <video id="video" playsinline autoplay muted></video>
-      <div class="scan-reticle"></div>
-      <div class="scan-hint">وجّه الكاميرا نحو رمز الاستكشاف المخفي 🔍</div>
+      <canvas id="arCanvas"></canvas>
+      <div class="scan-reticle" id="reticle"></div>
+      <div class="scan-hint" id="scanHintText">وجّه الكاميرا نحو رمز الاستكشاف المخفي 🔍</div>
     </div>
     <div class="scan-status" id="scanStatus">جاري تشغيل الكاميرا...</div>
   </section>
@@ -297,9 +300,13 @@ $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
 
 /* ---------- scanner (QR based "AR trigger") ---------- */
+const DWELL_MS = 1400; // مدة تثبيت الكاميرا حتى يتم "اصطياد" الشخصية
+let lockState = null; // { id, character, firstSeen, lastSeen, cx, cy, size }
+
 async function openScanner(){
   showScreen('screen-scan');
   $('scanStatus').textContent = 'جاري تشغيل الكاميرا...';
+  lockState = null;
   try{
     videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     const video = $('video');
@@ -308,44 +315,113 @@ async function openScanner(){
     scanning = true;
     $('scanStatus').textContent = 'وجّه الكاميرا نحو رمز أحد المستكشفين';
     requestAnimationFrame(scanLoop);
+    requestAnimationFrame(renderAR);
   }catch(err){
     $('scanStatus').textContent = 'تعذر الوصول للكاميرا. تأكد من السماح بالإذن، أو جرّب من متصفح آخر.';
   }
 }
 function stopScanner(){
   scanning = false;
+  lockState = null;
   if(videoStream){ videoStream.getTracks().forEach(t=>t.stop()); videoStream = null; }
 }
-const canvasEl = document.createElement('canvas');
-const ctx = canvasEl.getContext('2d', { willReadFrequently: true });
+
+const sampleCanvas = document.createElement('canvas');
+const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
+
+/* حلقة قراءة الرمز من الفيديو (خفيفة، تعمل في الخلفية) */
 function scanLoop(){
   if(!scanning) return;
   const video = $('video');
   if(video.readyState === video.HAVE_ENOUGH_DATA){
-    canvasEl.width = video.videoWidth;
-    canvasEl.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvasEl.width, canvasEl.height);
-    const imageData = ctx.getImageData(0,0,canvasEl.width, canvasEl.height);
+    sampleCanvas.width = video.videoWidth;
+    sampleCanvas.height = video.videoHeight;
+    sampleCtx.drawImage(video, 0, 0, sampleCanvas.width, sampleCanvas.height);
+    const imageData = sampleCtx.getImageData(0,0,sampleCanvas.width, sampleCanvas.height);
     const code = jsQR(imageData.data, imageData.width, imageData.height);
+    const now = performance.now();
+
     if(code && code.data){
-      handleScan(code.data.trim());
-      return;
+      const character = CHARACTERS.find(c=>c.id === code.data.trim());
+      if(character){
+        const loc = code.location;
+        const cx = (loc.topLeftCorner.x + loc.topRightCorner.x + loc.bottomLeftCorner.x + loc.bottomRightCorner.x)/4;
+        const cy = (loc.topLeftCorner.y + loc.topRightCorner.y + loc.bottomLeftCorner.y + loc.bottomRightCorner.y)/4;
+        const size = Math.hypot(loc.topRightCorner.x-loc.topLeftCorner.x, loc.topRightCorner.y-loc.topLeftCorner.y);
+
+        if(!lockState || lockState.id !== character.id){
+          lockState = { id: character.id, character, firstSeen: now, lastSeen: now, cx, cy, size };
+        }else{
+          lockState.lastSeen = now;
+          lockState.cx = cx; lockState.cy = cy; lockState.size = size; // تتبّع حي لموضع الرمز
+        }
+      }
+    }else if(lockState && now - lockState.lastSeen > 350){
+      lockState = null; // فقدنا الرمز من الكادر
     }
   }
   requestAnimationFrame(scanLoop);
 }
-async function handleScan(value){
-  const character = CHARACTERS.find(c=>c.id === value);
-  if(!character){ requestAnimationFrame(scanLoop); return; }
-  stopScanner();
-  if(!state.collected.includes(character.id)){
+
+/* حلقة الرسم: تعرض الشخصية عائمة فوق الرمز + حلقة تقدّم التثبيت */
+function renderAR(){
+  if(!scanning) return;
+  const video = $('video');
+  const canvas = $('arCanvas');
+  const displayW = canvas.clientWidth, displayH = canvas.clientHeight;
+  if(canvas.width !== displayW) canvas.width = displayW;
+  if(canvas.height !== displayH) canvas.height = displayH;
+  const actx = canvas.getContext('2d');
+  actx.clearRect(0,0,canvas.width, canvas.height);
+
+  if(lockState && video.videoWidth){
+    const sx = canvas.width / video.videoWidth;
+    const sy = canvas.height / video.videoHeight;
+    const x = lockState.cx * sx;
+    const y = lockState.cy * sy;
+    const dwell = Math.min(1, (performance.now() - lockState.firstSeen) / DWELL_MS);
+    const bounce = Math.sin(performance.now()/280) * 6;
+    const fontSize = Math.max(40, (lockState.size * sx) * 1.6);
+
+    // حلقة التثبيت (تقدّم الاصطياد)
+    actx.beginPath();
+    actx.arc(x, y, fontSize*0.62, -Math.PI/2, -Math.PI/2 + dwell*Math.PI*2);
+    actx.strokeStyle = '#F2B705';
+    actx.lineWidth = 5;
+    actx.lineCap = 'round';
+    actx.stroke();
+
+    // الشخصية العائمة
+    actx.font = fontSize + 'px sans-serif';
+    actx.textAlign = 'center';
+    actx.textBaseline = 'middle';
+    actx.shadowColor = 'rgba(0,0,0,0.45)';
+    actx.shadowBlur = 18;
+    actx.fillText(lockState.character.emoji, x, y - fontSize*0.05 + bounce);
+
+    $('scanStatus').textContent = 'ثبّت الكاميرا... جاري اصطياد ' + lockState.character.name + ' ✨';
+
+    if(dwell >= 1){
+      const c = lockState.character;
+      lockState = null;
+      finalizeCatch(c);
+      return; // نوقف حلقة الرسم لحين إغلاق شاشة الكشف
+    }
+  }else{
+    $('scanStatus').textContent = 'وجّه الكاميرا نحو رمز أحد المستكشفين';
+  }
+  requestAnimationFrame(renderAR);
+}
+
+async function finalizeCatch(character){
+  const isNew = !state.collected.includes(character.id);
+  if(isNew){
     state.collected.push(character.id);
     state.points += character.pts;
     await saveProgress();
-    showReveal(character, true);
-  }else{
-    showReveal(character, false);
   }
+  stopScanner();
+  showReveal(character, isNew);
 }
 function showReveal(character, isNew){
   $('revealEmoji').textContent = character.emoji;
