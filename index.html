@@ -83,6 +83,7 @@
   .scan-frame{position:relative;border-radius:22px;overflow:hidden;background:#000;aspect-ratio:3/4;border:1px solid var(--line);}
   video{width:100%;height:100%;object-fit:cover;display:block;}
   #arOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  #warmthGlow{position:absolute;inset:0;pointer-events:none;transition:box-shadow .35s ease;}
   .target-banner{background:rgba(0,0,0,0.5);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
   .target-banner .em{font-size:26px;}
   .target-banner .tx div:first-child{font-weight:800;font-size:14.5px;}
@@ -162,12 +163,13 @@
       <div class="em" id="targetEmoji">🐰</div>
       <div class="tx">
         <div id="targetName">اسم الشخصية</div>
-        <div id="targetHint">روح إلى المكان، وصوّر أي جدار أو ركن هناك</div>
+        <div id="targetHint">وصلت المكان؟ لُف بالكاميرا حواليك ببطء...</div>
       </div>
     </div>
     <div class="scan-frame">
       <video id="video" playsinline autoplay muted></video>
       <canvas id="arOverlay"></canvas>
+      <div id="warmthGlow"></div>
     </div>
     <div class="scan-status" id="scanStatus">جاري تشغيل الكاميرا...</div>
   </section>
@@ -208,13 +210,19 @@ const CHARACTERS = [
   {id:'KE-08', name:'الجوهرة الذهبية',emoji:'💎', pts:30, hint:'مسرح المدرسة'},
 ];
 const TOTAL_PTS = CHARACTERS.reduce((s,c)=>s+c.pts,0);
-const DWELL_MS = 1800; // مدة تثبيت الكاميرا قبل "الإمساك" بالشخصية
 
 let state = { name:null, collected:[], points:0 };
 let videoStream = null;
 let scanning = false;
 let currentTarget = null;
-let captureStart = 0;
+let orientationSupported = false;
+let baseAlpha = null, baseBeta = null;
+let targetYawOffset = 0, targetPitchOffset = 0;
+let lastYawDiff = 999, lastPitchDiff = 999;
+let inViewSince = null;
+const DWELL_MS = 1300; // مدة تثبيت الكاميرا على الشخصية قبل "الإمساك" بها
+const HALF_FOV_YAW = 32;  // نصف مجال رؤية الكاميرا أفقيًا (تقريبي)
+const HALF_FOV_PITCH = 24; // نصف مجال رؤية الكاميرا رأسيًا (تقريبي)
 
 const $ = id => document.getElementById(id);
 function showScreen(id){
@@ -279,22 +287,67 @@ $('certBtnMap').onclick = ()=>{ renderCert(); showScreen('screen-cert'); };
 $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen('screen-map'); };
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
 
-/* ---------- scanner: كاميرا حية + الشخصية تطفو تلقائيًا بدون أي صورة أو رمز ---------- */
+/* ---------- اتجاه الجهاز: نحدد "مكان" عشوائي مخفي للشخصية داخل الغرفة ---------- */
+function angDiff(a, b){ return ((a - b + 540) % 360) - 180; } // فرق زاوية بين -180 و180
+
+function handleOrientation(e){
+  if(e.alpha == null) return;
+  const alpha = (typeof e.webkitCompassHeading === 'number') ? e.webkitCompassHeading : e.alpha;
+  const beta = e.beta ?? 0;
+  if(baseAlpha === null){
+    baseAlpha = alpha;
+    baseBeta = beta;
+    // نختار جهة عشوائية بعيدة شوي عشان يحتاج يلف فعلاً يدوّرها
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    targetYawOffset = dir * (55 + Math.random()*80); // بين 55 و135 درجة يمين أو يسار
+    targetPitchOffset = (Math.random()*26) - 13; // ميل بسيط فوق أو تحت
+  }
+  const curYawDiff = angDiff(alpha, baseAlpha) - targetYawOffset;
+  const curPitchDiff = (beta - baseBeta) - targetPitchOffset;
+  lastYawDiff = angDiff(curYawDiff, 0);
+  lastPitchDiff = curPitchDiff;
+}
+
+async function enableOrientation(){
+  orientationSupported = false;
+  baseAlpha = null; baseBeta = null;
+  if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+    try{
+      const res = await DeviceOrientationEvent.requestPermission();
+      if(res === 'granted'){
+        window.addEventListener('deviceorientation', handleOrientation);
+        orientationSupported = true;
+      }
+    }catch(e){ /* المستخدم رفض الإذن أو غير مدعوم */ }
+  }else if(typeof DeviceOrientationEvent !== 'undefined'){
+    window.addEventListener('deviceorientation', handleOrientation);
+    orientationSupported = true;
+  }
+}
+function disableOrientation(){
+  window.removeEventListener('deviceorientation', handleOrientation);
+  baseAlpha = null; baseBeta = null; lastYawDiff = 999; lastPitchDiff = 999;
+}
+
+/* ---------- الماسح ---------- */
 async function openScanner(character){
   currentTarget = character;
+  inViewSince = null;
   $('targetEmoji').textContent = character.emoji;
   $('targetName').textContent = character.name;
-  $('targetHint').textContent = 'وصلت؟ صوّر أي جدار أو ركن حولك — ' + character.hint;
+  $('targetHint').textContent = 'روح إلى: ' + character.hint + ' — ولُف بالكاميرا حواليك';
   showScreen('screen-scan');
   $('scanStatus').textContent = 'جاري تشغيل الكاميرا...';
+  await enableOrientation();
   try{
     videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     const video = $('video');
     video.srcObject = videoStream;
     await video.play();
     scanning = true;
-    captureStart = performance.now();
-    $('scanStatus').textContent = 'ما تحتاج تصوب على شيء معيّن — بس ثبّت الكاميرا وانتظر ✨';
+    $('scanStatus').textContent = orientationSupported
+      ? 'لُف بالكاميرا يمين ويسار داخل الغرفة...'
+      : 'جهازك ما يدعم اتجاه الكاميرا — راح تظهر الشخصية تلقائيًا أمامك';
     requestAnimationFrame(renderAR);
   }catch(err){
     $('scanStatus').textContent = 'تعذر الوصول للكاميرا. تأكد من السماح بالإذن.';
@@ -303,6 +356,8 @@ async function openScanner(character){
 function stopScanner(){
   scanning = false;
   currentTarget = null;
+  disableOrientation();
+  $('warmthGlow').style.boxShadow = 'none';
   if(videoStream){ videoStream.getTracks().forEach(t=>t.stop()); videoStream = null; }
 }
 
@@ -314,34 +369,53 @@ function renderAR(){
   if(canvas.height !== displayH) canvas.height = displayH;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width, canvas.height);
-
   const now = performance.now();
-  const dwell = Math.min(1, (now - captureStart) / DWELL_MS);
-  const cx = canvas.width/2, cy = canvas.height*0.42;
-  const bounce = Math.sin(now/280) * 8;
-  const fontSize = Math.min(canvas.width, canvas.height) * 0.28;
 
-  // حلقة "الإمساك" التلقائية
-  ctx.beginPath();
-  ctx.arc(cx, cy, fontSize*0.62, -Math.PI/2, -Math.PI/2 + dwell*Math.PI*2);
-  ctx.strokeStyle = '#F2B705';
-  ctx.lineWidth = 6;
-  ctx.lineCap = 'round';
-  ctx.stroke();
+  // بدون دعم اتجاه: نفس السلوك القديم (تظهر بالمنتصف مباشرة)
+  const yawDiff = orientationSupported ? lastYawDiff : 0;
+  const pitchDiff = orientationSupported ? lastPitchDiff : 0;
+  const visible = Math.abs(yawDiff) < HALF_FOV_YAW && Math.abs(pitchDiff) < HALF_FOV_PITCH;
 
-  // الشخصية العائمة
-  ctx.font = fontSize + 'px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 22;
-  ctx.fillText(currentTarget.emoji, cx, cy + bounce);
+  // إحساس "الدفء" — كل ما قرّبت الاتجاه الصح يزيد التوهج الذهبي حول الإطار
+  const dist = Math.min(1, Math.hypot(yawDiff, pitchDiff) / 140);
+  const warmth = 1 - dist; // 0 بارد → 1 حار
+  $('warmthGlow').style.boxShadow = visible ? 'none' : `inset 0 0 ${40+warmth*70}px ${6+warmth*10}px rgba(242,183,5,${0.05+warmth*0.35})`;
 
-  if(dwell >= 1){
-    const c = currentTarget;
-    scanning = false;
-    finalizeCatch(c);
-    return;
+  if(visible){
+    if(inViewSince === null) inViewSince = now;
+    const dwell = Math.min(1, (now - inViewSince) / DWELL_MS);
+    const x = canvas.width/2 + (yawDiff/HALF_FOV_YAW) * (canvas.width*0.32);
+    const y = canvas.height/2 + (pitchDiff/HALF_FOV_PITCH) * (canvas.height*0.28);
+    const bounce = Math.sin(now/280) * 8;
+    const fontSize = Math.min(canvas.width, canvas.height) * 0.24;
+
+    ctx.beginPath();
+    ctx.arc(x, y, fontSize*0.62, -Math.PI/2, -Math.PI/2 + dwell*Math.PI*2);
+    ctx.strokeStyle = '#F2B705';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.font = fontSize + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 22;
+    ctx.fillText(currentTarget.emoji, x, y + bounce);
+
+    $('scanStatus').textContent = 'لقيتها! ثبّت الكاميرا... ✨';
+
+    if(dwell >= 1){
+      const c = currentTarget;
+      scanning = false;
+      finalizeCatch(c);
+      return;
+    }
+  }else{
+    inViewSince = null;
+    if(scanning && orientationSupported){
+      $('scanStatus').textContent = warmth > 0.6 ? 'اقتربت... استمر باللف 🔥' : 'لُف بالكاميرا يمين ويسار...';
+    }
   }
   requestAnimationFrame(renderAR);
 }
