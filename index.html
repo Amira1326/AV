@@ -162,7 +162,7 @@
       <div class="em" id="targetEmoji">🐰</div>
       <div class="tx">
         <div id="targetName">اسم الشخصية</div>
-        <div id="targetHint">تلميح المكان</div>
+        <div id="targetHint">روح إلى المكان، وصوّر أي جدار أو ركن هناك</div>
       </div>
     </div>
     <div class="scan-frame">
@@ -284,7 +284,7 @@ async function openScanner(character){
   currentTarget = character;
   $('targetEmoji').textContent = character.emoji;
   $('targetName').textContent = character.name;
-  $('targetHint').textContent = 'روح إلى: ' + character.hint;
+  $('targetHint').textContent = 'وصلت؟ صوّر أي جدار أو ركن حولك — ' + character.hint;
   showScreen('screen-scan');
   $('scanStatus').textContent = 'جاري تشغيل الكاميرا...';
   try{
@@ -294,7 +294,7 @@ async function openScanner(character){
     await video.play();
     scanning = true;
     captureStart = performance.now();
-    $('scanStatus').textContent = 'ثبّت الكاميرا... جاري ظهور ' + character.name + ' ✨';
+    $('scanStatus').textContent = 'ما تحتاج تصوب على شيء معيّن — بس ثبّت الكاميرا وانتظر ✨';
     requestAnimationFrame(renderAR);
   }catch(err){
     $('scanStatus').textContent = 'تعذر الوصول للكاميرا. تأكد من السماح بالإذن.';
