@@ -108,6 +108,14 @@
 
   .empty-note{font-size:12.5px;opacity:.5;text-align:center;margin-top:10px;line-height:1.7;}
   .back-link{font-size:13px;font-weight:800;color:var(--gold);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;}
+
+  .cust-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.045);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px;}
+  .cust-em{font-size:26px;width:46px;text-align:center;}
+  .cust-info{flex:1;}
+  .cust-name{font-weight:800;font-size:14px;}
+  .cust-status{font-size:11.5px;opacity:.55;font-weight:700;margin-top:2px;}
+  .cust-status.ok{color:var(--teal);opacity:1;}
+  .cust-file{font-size:11px;color:var(--parchment);max-width:110px;}
 </style>
 </head>
 <body>
@@ -126,6 +134,7 @@
       <button class="btn btn-gold mt14" id="startBtn">ابدأ المغامرة 🧭</button>
       <div class="empty-note">بياناتك تُحفظ باسمك حتى تقدر تكمل من أي جهاز داخل المدرسة.</div>
     </div>
+    <a class="back-link" id="toCustomize" href="#" style="display:block;text-align:center;margin-top:20px;">🎬 تخصيص الشخصيات بفيديو حقيقي (للمعلّم)</a>
   </section>
 
   <!-- MAP / DASHBOARD -->
@@ -188,6 +197,17 @@
     <button class="btn btn-teal mt20" id="printCertBtn">🖨️ طباعة / حفظ الشهادة</button>
   </section>
 
+  <!-- CUSTOMIZE (teacher: upload real green-screen video per character) -->
+  <section class="screen" id="screen-customize">
+    <a class="back-link" id="backFromCustomize">→ رجوع</a>
+    <h2 style="font-size:20px;margin:0 0 4px;">فيديو حقيقي لكل شخصية</h2>
+    <p style="opacity:.6;font-size:13px;line-height:1.9;margin:0 0 14px;">
+      ارفع مقطع فيديو قصير (mp4) لكل شخصية بخلفية <b>خضراء صافية</b> — الموقع يشيل الخلفية تلقائيًا ويعرض الشخصية عائمة فوق الكاميرا بدون خلفية. تقدر تصوّرها بنفسك بقماش أخضر، أو تجيبها من مواقع فيديو مجانية الحقوق (مثل Pixabay أو Mixkit) وتبحث "green screen lion" ونحوها.
+      إذا ما رفعت فيديو لشخصية معيّنة، بتظهر برمزها التعبيري كخيار احتياطي.
+    </p>
+    <div id="customizeList"></div>
+  </section>
+
 </div>
 
 <!-- REVEAL OVERLAY -->
@@ -220,9 +240,65 @@ let baseAlpha = null, baseBeta = null;
 let targetYawOffset = 0, targetPitchOffset = 0;
 let lastYawDiff = 999, lastPitchDiff = 999;
 let inViewSince = null;
+let characterMedia = {}; // { [id]: {video, keyCanvas, keyCtx} }
 const DWELL_MS = 1300; // مدة تثبيت الكاميرا على الشخصية قبل "الإمساك" بها
 const HALF_FOV_YAW = 32;  // نصف مجال رؤية الكاميرا أفقيًا (تقريبي)
 const HALF_FOV_PITCH = 24; // نصف مجال رؤية الكاميرا رأسيًا (تقريبي)
+
+$('toCustomize').onclick = (e)=>{ e.preventDefault(); buildCustomizeScreen(); showScreen('screen-customize'); };
+$('backFromCustomize').onclick = (e)=>{ e.preventDefault(); showScreen('screen-login'); };
+
+function buildCustomizeScreen(){
+  const list = $('customizeList');
+  if(list.dataset.built) return;
+  list.dataset.built = '1';
+  CHARACTERS.forEach(c=>{
+    const row = document.createElement('div');
+    row.className = 'cust-card';
+    row.innerHTML = `
+      <div class="cust-em">${c.emoji}</div>
+      <div class="cust-info">
+        <div class="cust-name">${c.name}</div>
+        <div class="cust-status" id="custStatus-${c.id}">بدون فيديو — سيظهر الرمز التعبيري</div>
+      </div>
+      <input type="file" accept="video/*" id="custFile-${c.id}" style="width:110px;font-size:11px;color:var(--parchment);">`;
+    list.appendChild(row);
+    $(`custFile-${c.id}`).addEventListener('change', (e)=> handleVideoUpload(c.id, e.target.files[0]));
+  });
+}
+
+function handleVideoUpload(id, file){
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.src = url; video.loop = true; video.muted = true; video.playsInline = true;
+  video.crossOrigin = 'anonymous';
+  video.play().catch(()=>{});
+  const keyCanvas = document.createElement('canvas');
+  const keyCtx = keyCanvas.getContext('2d', { willReadFrequently: true });
+  characterMedia[id] = { video, keyCanvas, keyCtx };
+  const statusEl = $(`custStatus-${id}`);
+  statusEl.textContent = '✅ ' + file.name + ' — جاهز، سيظهر بدون خلفية';
+  statusEl.classList.add('ok');
+}
+
+/* إزالة الخلفية الخضراء وإرجاع كانفاس شفاف يحتوي الإطار الحالي فقط */
+function chromaKeyFrame(media){
+  const { video, keyCanvas, keyCtx } = media;
+  if(video.readyState < 2 || !video.videoWidth) return null;
+  const w = video.videoWidth, h = video.videoHeight;
+  if(keyCanvas.width !== w) keyCanvas.width = w;
+  if(keyCanvas.height !== h) keyCanvas.height = h;
+  keyCtx.drawImage(video, 0, 0, w, h);
+  const frame = keyCtx.getImageData(0, 0, w, h);
+  const d = frame.data;
+  for(let i=0; i<d.length; i+=4){
+    const r=d[i], g=d[i+1], b=d[i+2];
+    if(g > 85 && g > r*1.12 && g > b*1.12){ d[i+3] = 0; } // بكسل أخضر → شفاف
+  }
+  keyCtx.putImageData(frame, 0, 0);
+  return keyCanvas;
+}
 
 const $ = id => document.getElementById(id);
 function showScreen(id){
@@ -396,12 +472,23 @@ function renderAR(){
     ctx.lineCap = 'round';
     ctx.stroke();
 
-    ctx.font = fontSize + 'px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 22;
-    ctx.fillText(currentTarget.emoji, x, y + bounce);
+    const media = characterMedia[currentTarget.id];
+    const keyed = media ? chromaKeyFrame(media) : null;
+    if(keyed){
+      const size = fontSize * 2.1;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 20;
+      ctx.drawImage(keyed, x - size/2, y - size/2 + bounce*0.4, size, size);
+      ctx.restore();
+    }else{
+      ctx.font = fontSize + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 22;
+      ctx.fillText(currentTarget.emoji, x, y + bounce);
+    }
 
     $('scanStatus').textContent = 'لقيتها! ثبّت الكاميرا... ✨';
 
