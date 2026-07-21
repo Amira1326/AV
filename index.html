@@ -219,6 +219,12 @@
 </div>
 
 <script>
+const $ = id => document.getElementById(id);
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
 const CHARACTERS = [
   {id:'KE-01', name:'أرنب الحروف',    emoji:'🐰', pts:10, hint:'قرب مكتبة المدرسة'},
   {id:'KE-02', name:'أسد الشجاعة',    emoji:'🦁', pts:10, hint:'عند بوابة الملعب'},
@@ -316,12 +322,6 @@ function chromaKeyFrame(media){
   }
   keyCtx.putImageData(frame, 0, 0);
   return keyCanvas;
-}
-
-const $ = id => document.getElementById(id);
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  $(id).classList.add('active');
 }
 
 /* ---------- storage ---------- */
