@@ -156,11 +156,12 @@
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
 
-    <div class="empty-note" style="text-align:right;margin:0 0 6px;">اضغط على أي شخصية غير مكتشفة، روح لمكانها، وافتح الكاميرا هناك.</div>
+    <div class="empty-note" style="text-align:right;margin:0 0 6px;">هذي سجل إنجازاتك بس — افتح الكاميرا وتجوّل بالمدرسة، والشخصيات تفاجئك وحدها.</div>
     <div class="trail" id="trailList"></div>
 
     <div class="fab-wrap">
-      <button class="btn btn-ghost" id="certBtnMap" style="display:none;">🏅 استلم شهادتي ووسامي</button>
+      <button class="btn btn-gold" id="exploreBtn">📷 افتح الكاميرا واستكشف</button>
+      <button class="btn btn-ghost mt10" id="certBtnMap" style="display:none;">🏅 استلم شهادتي ووسامي</button>
     </div>
     <a class="back-link" id="switchUser" href="#" style="display:block;text-align:center;margin-top:20px;">تبديل المستخدم</a>
   </section>
@@ -169,10 +170,10 @@
   <section class="screen" id="screen-scan">
     <a class="back-link" id="backFromScan">→ رجوع للخريطة</a>
     <div class="target-banner">
-      <div class="em" id="targetEmoji">🐰</div>
+      <div class="em" id="targetEmoji">🔍</div>
       <div class="tx">
-        <div id="targetName">اسم الشخصية</div>
-        <div id="targetHint">وصلت المكان؟ لُف بالكاميرا حواليك ببطء...</div>
+        <div id="targetName">شخصية مجهولة تنتظرك بمكان ما...</div>
+        <div id="targetHint">لُف بالكاميرا حواليك ببطء وشوف وين تحس بدفء أكثر</div>
       </div>
     </div>
     <div class="scan-frame">
@@ -202,8 +203,7 @@
     <a class="back-link" id="backFromCustomize">→ رجوع</a>
     <h2 style="font-size:20px;margin:0 0 4px;">فيديو حقيقي لكل شخصية</h2>
     <p style="opacity:.6;font-size:13px;line-height:1.9;margin:0 0 14px;">
-      ارفع مقطع فيديو قصير (mp4) لكل شخصية بخلفية <b>خضراء صافية</b> — الموقع يشيل الخلفية تلقائيًا ويعرض الشخصية عائمة فوق الكاميرا بدون خلفية. تقدر تصوّرها بنفسك بقماش أخضر، أو تجيبها من مواقع فيديو مجانية الحقوق (مثل Pixabay أو Mixkit) وتبحث "green screen lion" ونحوها.
-      إذا ما رفعت فيديو لشخصية معيّنة، بتظهر برمزها التعبيري كخيار احتياطي.
+      ارفع لكل شخصية إما <b>صورة PNG بخلفية شفافة</b> (تظهر بتأثير شبه-3D تدور وتتمايل تلقائيًا) أو <b>فيديو بخلفية خضراء صافية</b> (يشيل الموقع الخلفية تلقائيًا). إذا ما رفعت شي لشخصية معيّنة، بتظهر برمزها التعبيري كخيار احتياطي.
     </p>
     <div id="customizeList"></div>
   </section>
@@ -261,10 +261,28 @@ function buildCustomizeScreen(){
         <div class="cust-name">${c.name}</div>
         <div class="cust-status" id="custStatus-${c.id}">بدون فيديو — سيظهر الرمز التعبيري</div>
       </div>
-      <input type="file" accept="video/*" id="custFile-${c.id}" style="width:110px;font-size:11px;color:var(--parchment);">`;
+      <input type="file" accept="image/png,image/webp,video/*" id="custFile-${c.id}" style="width:110px;font-size:11px;color:var(--parchment);">`;
     list.appendChild(row);
-    $(`custFile-${c.id}`).addEventListener('change', (e)=> handleVideoUpload(c.id, e.target.files[0]));
+    $(`custFile-${c.id}`).addEventListener('change', (e)=> handleMediaUpload(c.id, e.target.files[0]));
   });
+}
+
+function handleMediaUpload(id, file){
+  if(!file) return;
+  if(file.type.startsWith('video/')) return handleVideoUpload(id, file);
+  return handleImageUpload(id, file);
+}
+
+function handleImageUpload(id, file){
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = ()=>{
+    characterMedia[id] = { type:'image', img, seed: Math.random()*10 };
+    const statusEl = $(`custStatus-${id}`);
+    statusEl.textContent = '✅ ' + file.name + ' — يظهر بتأثير شبه-3D (يميل ويدور)';
+    statusEl.classList.add('ok');
+  };
+  img.src = url;
 }
 
 function handleVideoUpload(id, file){
@@ -276,7 +294,7 @@ function handleVideoUpload(id, file){
   video.play().catch(()=>{});
   const keyCanvas = document.createElement('canvas');
   const keyCtx = keyCanvas.getContext('2d', { willReadFrequently: true });
-  characterMedia[id] = { video, keyCanvas, keyCtx };
+  characterMedia[id] = { type:'video', video, keyCanvas, keyCtx };
   const statusEl = $(`custStatus-${id}`);
   statusEl.textContent = '✅ ' + file.name + ' — جاهز، سيظهر بدون خلفية';
   statusEl.classList.add('ok');
@@ -351,8 +369,7 @@ function renderMap(){
         <div class="node-meta">${done ? ('تم الاكتشاف • +'+c.pts+' نقطة') : ('تلميح: '+c.hint)}</div>
       </div>
       <div class="node-check">✓</div>
-      <div class="node-arrow">‹</div>`;
-    if(!done){ node.onclick = ()=> openScanner(c); }
+      <div class="node-arrow" style="display:none;"></div>`;
     list.appendChild(node);
   });
 
@@ -360,6 +377,12 @@ function renderMap(){
   $('certBtnMap').style.display = allDone ? 'inline-flex' : 'none';
 }
 $('certBtnMap').onclick = ()=>{ renderCert(); showScreen('screen-cert'); };
+$('exploreBtn').onclick = ()=>{
+  const remaining = CHARACTERS.filter(c=>!state.collected.includes(c.id));
+  if(remaining.length === 0){ renderCert(); showScreen('screen-cert'); return; }
+  const pick = remaining[Math.floor(Math.random()*remaining.length)];
+  openScanner(pick);
+};
 $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen('screen-map'); };
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
 
@@ -409,9 +432,9 @@ function disableOrientation(){
 async function openScanner(character){
   currentTarget = character;
   inViewSince = null;
-  $('targetEmoji').textContent = character.emoji;
-  $('targetName').textContent = character.name;
-  $('targetHint').textContent = 'روح إلى: ' + character.hint + ' — ولُف بالكاميرا حواليك';
+  $('targetEmoji').textContent = '🔍';
+  $('targetName').textContent = 'شخصية مجهولة تنتظرك بمكان ما...';
+  $('targetHint').textContent = 'لُف بالكاميرا حواليك ببطء وشوف وين تحس بدفء أكثر';
   showScreen('screen-scan');
   $('scanStatus').textContent = 'جاري تشغيل الكاميرا...';
   await enableOrientation();
@@ -473,13 +496,41 @@ function renderAR(){
     ctx.stroke();
 
     const media = characterMedia[currentTarget.id];
-    const keyed = media ? chromaKeyFrame(media) : null;
-    if(keyed){
-      const size = fontSize * 2.1;
+
+    if(media && media.type === 'video'){
+      const keyed = chromaKeyFrame(media);
+      if(keyed){
+        const size = fontSize * 2.1;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 20;
+        ctx.drawImage(keyed, x - size/2, y - size/2 + bounce*0.4, size, size);
+        ctx.restore();
+      }
+    }else if(media && media.type === 'image' && media.img.complete){
+      const size = fontSize * 1.9;
+      const t = now/900 + media.seed;
+      const rotY = Math.sin(t) * 0.55; // تمايل دوراني وهمي حول المحور الرأسي
+      const squish = Math.max(0.35, Math.cos(rotY)); // يضيق كل ما "دار" أكثر
+      const skew = Math.sin(rotY) * 0.22;
+      const groundY = y + size*0.42 + bounce*0.4;
+
+      // ظل أرضي يعطي إحساس إنها "واقفة" بالمكان
       ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 20;
-      ctx.drawImage(keyed, x - size/2, y - size/2 + bounce*0.4, size, size);
+      ctx.translate(x, groundY);
+      ctx.scale(squish, 1);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, size*0.26, size*0.07, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(x, y + bounce*0.4);
+      ctx.transform(squish, 0, skew, 1, 0, 0); // تمايل شبه-3D
+      ctx.shadowColor = 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = 16;
+      ctx.drawImage(media.img, -size/2, -size/2, size, size);
       ctx.restore();
     }else{
       ctx.font = fontSize + 'px sans-serif';
