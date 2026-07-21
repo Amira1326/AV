@@ -5,117 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>مستكشفو المعرفة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1B1533;
-    --parchment:#FBF1DC;
-    --gold:#F2B705;
-    --teal:#12877F;
-    --coral:#FF6F59;
-    --violet:#7C5CD1;
-    --line: rgba(251,241,220,0.14);
+    --bg:#EEF3F9;
+    --ink:#0E2036;
+    --ink-soft:#6B7E92;
+    --electric:#2F6FED;
+    --teal:#0FB8A6;
+    --amber:#F2A93B;
+    --pink:#E8497A;
+    --violet:#8B5CF6;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   body{
-    background: radial-gradient(1200px 800px at 80% -10%, #2A2350 0%, #1B1533 55%, #150F28 100%);
-    color: var(--parchment);
-    font-family:'Cairo', sans-serif;
-    min-height:100vh;
-    overflow-x:hidden;
+    background:
+      radial-gradient(700px 420px at 15% 0%, rgba(47,111,237,0.07), transparent 60%),
+      radial-gradient(700px 420px at 100% 10%, rgba(15,184,166,0.06), transparent 60%),
+      var(--bg);
+    font-family:'Tajawal',sans-serif;color:var(--ink);min-height:100vh;
   }
-  .num{font-family:'JetBrains Mono', monospace;}
-  h1,h2,h3,.display{font-family:'Baloo Bhaijaan 2', sans-serif;}
-  #app{max-width:520px;margin:0 auto;min-height:100vh;position:relative;padding:20px 18px 40px;}
-
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
-  .brand{display:flex;align-items:center;gap:10px;}
-  .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#c98f00);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 18px rgba(242,183,5,0.25);}
-  .brand-title{font-size:19px;font-weight:800;letter-spacing:.2px;}
-  .brand-sub{font-size:11px;opacity:.55;font-weight:600;margin-top:-2px;}
-  .score-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-weight:700;}
-  .score-pill .num{color:var(--gold);font-size:15px;}
-
-  .screen{display:none;}
-  .screen.active{display:block;animation:fade .35s ease;}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-  .login-hero{text-align:center;padding:40px 8px 10px;}
-  .login-hero .emoji-row{font-size:34px;letter-spacing:8px;margin-bottom:14px;opacity:.9;}
-  .login-hero h1{font-size:30px;margin:0 0 6px;}
-  .login-hero p{opacity:.65;font-size:14.5px;line-height:1.7;margin:0 auto 26px;max-width:360px;}
-  .card{background:rgba(255,255,255,0.045);border:1px solid var(--line);border-radius:20px;padding:22px;}
-  input[type=text]{width:100%;background:rgba(0,0,0,0.2);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;color:var(--parchment);font-family:'Cairo';font-size:15.5px;font-weight:600;outline:none;transition:border-color .2s;}
-  input[type=text]:focus{border-color:var(--gold);}
-  label.field-label{display:block;font-size:12.5px;font-weight:700;opacity:.6;margin-bottom:8px;}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 18px;border-radius:14px;border:none;font-family:'Cairo';font-weight:800;font-size:15.5px;cursor:pointer;transition:transform .15s ease, filter .15s ease;}
-  .btn:active{transform:scale(.97);}
-  .btn-gold{background:linear-gradient(135deg,var(--gold),#d99a00);color:#241a00;box-shadow:0 10px 24px rgba(242,183,5,0.22);}
-  .btn-teal{background:linear-gradient(135deg,var(--teal),#0c5f5a);color:#eafffb;}
-  .btn-ghost{background:rgba(255,255,255,0.06);color:var(--parchment);border:1px solid var(--line);}
-  .btn[disabled]{opacity:.4;cursor:not-allowed;}
+  #app{max-width:460px;margin:0 auto;min-height:100vh;position:relative;padding:22px 18px 44px;}
+  .display{font-family:'Baloo Bhaijaan 2';}
+  .num{font-family:'JetBrains Mono';}
   .mt10{margin-top:10px;}.mt14{margin-top:14px;}.mt20{margin-top:20px;}
 
-  .trail-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;}
-  .trail-head h2{font-size:19px;margin:0;}
-  .trail-head span{font-size:12.5px;opacity:.55;font-weight:700;}
-  .progress-bar{height:8px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;margin:12px 0 22px;}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:999px;transition:width .5s ease;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadeUp .35s cubic-bezier(.2,.8,.3,1);}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
-  .trail{display:flex;flex-direction:column;gap:4px;position:relative;}
-  .trail::before{content:'';position:absolute;top:26px;bottom:26px;right:34px;width:2px;background:repeating-linear-gradient(to bottom, var(--line) 0 6px, transparent 6px 12px);}
-  .node{display:flex;align-items:center;gap:14px;padding:12px 8px;position:relative;cursor:pointer;border-radius:14px;transition:background .15s;}
-  .node:active{background:rgba(255,255,255,0.05);}
-  .node-dot{width:68px;height:68px;flex:0 0 auto;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;z-index:1;background:rgba(255,255,255,0.04);border:1.5px solid var(--line);filter:grayscale(1);opacity:.45;transition:all .25s ease;}
-  .node.done .node-dot{filter:none;opacity:1;background:linear-gradient(145deg, rgba(242,183,5,0.18), rgba(124,92,209,0.12));border-color:var(--gold);box-shadow:0 6px 20px rgba(242,183,5,0.18);}
-  .node-info{flex:1;}
-  .node-name{font-weight:800;font-size:15px;}
-  .node-meta{font-size:12px;opacity:.5;margin-top:2px;font-weight:600;}
-  .node.done .node-meta{opacity:.75;color:var(--gold);}
-  .node-check{width:26px;height:26px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex:0 0 auto;opacity:0;transform:scale(.5);transition:all .25s ease;}
-  .node.done .node-check{opacity:1;transform:scale(1);}
-  .node-arrow{opacity:.3;font-size:13px;}
-  .node.done .node-arrow{display:none;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px 18px;border-radius:13px;border:none;font-family:'Tajawal';font-weight:800;font-size:15.5px;cursor:pointer;}
+  .btn:active{transform:scale(.98);}
+  .btn-electric{background:linear-gradient(135deg, var(--electric), #2559C7);color:#fff;box-shadow:0 14px 24px rgba(47,111,237,0.35), inset 0 1px 0 rgba(255,255,255,0.25);}
+  .btn-teal{background:linear-gradient(135deg, var(--teal), #0C9789);color:#fff;box-shadow:0 12px 20px rgba(15,184,166,0.3);}
+  .btn-ghost{background:#fff;color:var(--ink);border:2px solid #E1E9F1;}
+  .back-link{font-size:13px;font-weight:800;color:var(--electric);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;}
+  .link-quiet{font-size:12px;font-weight:800;color:var(--ink-soft);text-decoration:none;display:block;text-align:center;margin-top:20px;}
 
-  .fab-wrap{position:sticky;bottom:14px;margin-top:26px;}
+  /* ---- تسجيل الدخول ---- */
+  .login-card{background:#fff;border-radius:24px;padding:36px 24px 30px;text-align:center;box-shadow:0 30px 60px -12px rgba(15,60,120,0.18), 0 4px 12px rgba(15,60,120,0.06);position:relative;overflow:hidden;}
+  .login-card::before{content:'';position:absolute;top:0;right:0;left:0;height:5px;background:linear-gradient(90deg, var(--electric), var(--teal), var(--violet));}
+  .login-card::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.04;background-image:linear-gradient(var(--electric) 1px, transparent 1px),linear-gradient(90deg, var(--electric) 1px, transparent 1px);background-size:24px 24px;}
+  .badge-icon{width:72px;height:72px;border-radius:20px;margin:0 auto 18px;background:linear-gradient(135deg, var(--electric), var(--violet) 60%, var(--pink));display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 14px 28px rgba(47,111,237,0.38), inset 0 1px 0 rgba(255,255,255,0.4);position:relative;animation:float 4s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  .login-card h1{font-size:27px;margin:0 0 6px;position:relative;}
+  .login-card p{font-size:12.5px;color:var(--ink-soft);margin:0 0 24px;font-weight:600;position:relative;line-height:1.6;}
+  label.field-label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;position:relative;}
+  input[type=text]{width:100%;background:#F6F9FC;border:2px solid #E6EDF5;border-radius:13px;padding:15px 16px;color:var(--ink);font-family:'Tajawal';font-size:15.5px;font-weight:700;outline:none;position:relative;}
+  input[type=text]:focus{border-color:var(--electric);}
 
-  .scan-frame{position:relative;border-radius:22px;overflow:hidden;background:#000;aspect-ratio:3/4;border:1px solid var(--line);}
+  /* ---- شاشة البطاقات ---- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg, var(--electric), var(--violet));display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;}
+  .brand-title{font-size:17px;font-weight:800;}
+  .brand-sub{font-size:11px;color:var(--ink-soft);font-weight:700;margin-top:-2px;}
+  .score-chip{background:var(--ink);color:#fff;font-size:13px;font-weight:800;padding:8px 16px;border-radius:999px;box-shadow:0 8px 16px rgba(14,32,54,0.25);}
+
+  .map-title{font-size:19px;font-weight:800;}
+  .map-sub{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-top:1px;margin-bottom:14px;}
+  .progress-track{height:7px;border-radius:999px;background:#DCE5EF;overflow:hidden;margin:6px 0 18px;}
+  .progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg, var(--electric), var(--teal));transition:width .6s cubic-bezier(.2,.8,.3,1);}
+
+  .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .char-card{border-radius:18px;padding:16px 10px 13px;text-align:center;position:relative;overflow:hidden;background:#fff;}
+  .char-card.locked{border:2px dashed #D3DEEA;}
+  .char-card.locked .emo{filter:grayscale(1) brightness(1.15);opacity:.3;}
+  .char-card.unlocked{border:none;box-shadow:0 16px 30px -8px rgba(15,60,120,0.22), 0 2px 8px rgba(15,60,120,0.08);}
+  .foil-border{position:absolute;inset:0;border-radius:18px;padding:2.5px;background:conic-gradient(from var(--ang,0deg), var(--electric), var(--violet), var(--pink), var(--amber), var(--teal), var(--electric));-webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;}
+  .shine{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.65) 48%, transparent 60%);mix-blend-mode:overlay;}
+  .card-inner{position:relative;z-index:2;}
+  .emo{font-size:30px;margin-bottom:6px;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.12));}
+  .cname{font-size:11.5px;font-weight:800;}
+  .cpts{font-size:10.5px;font-weight:800;margin-top:4px;}
+  .char-card.unlocked .cpts{color:var(--electric);}
+  .char-card.locked .cpts{color:#C4D0DC;}
+  .mystery{font-size:10.5px;font-weight:800;color:#C4D0DC;}
+  .lock-ic{position:absolute;top:9px;left:9px;font-size:11px;opacity:.35;z-index:2;}
+
+  /* ---- الماسح ---- */
+  .target-banner{background:var(--ink);color:#fff;border-radius:13px;padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+  .target-banner .em{font-size:22px;}
+  .target-banner .tx div:first-child{font-weight:800;font-size:13.5px;}
+  .target-banner .tx div:last-child{font-size:11px;opacity:.65;font-weight:600;}
+  .scan-frame{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:3/4;box-shadow:0 20px 40px rgba(15,60,120,0.2);}
   video{width:100%;height:100%;object-fit:cover;display:block;}
   #arOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
   #warmthGlow{position:absolute;inset:0;pointer-events:none;transition:box-shadow .35s ease;}
-  .target-banner{background:rgba(0,0,0,0.5);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
-  .target-banner .em{font-size:26px;}
-  .target-banner .tx div:first-child{font-weight:800;font-size:14.5px;}
-  .target-banner .tx div:last-child{font-size:12px;opacity:.6;font-weight:600;}
-  .scan-status{font-size:12.5px;text-align:center;opacity:.55;margin-top:10px;font-weight:700;}
+  .scan-status{font-size:12.5px;text-align:center;color:var(--ink-soft);margin-top:10px;font-weight:700;}
 
-  .reveal-layer{position:fixed;inset:0;background:radial-gradient(circle at 50% 40%, rgba(124,92,209,0.35), rgba(21,15,40,0.96) 65%);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:50;text-align:center;padding:20px;}
+  /* ---- طبقة الاكتشاف ---- */
+  .reveal-layer{position:fixed;inset:0;background:rgba(14,32,54,0.9);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:50;text-align:center;padding:20px;}
   .reveal-layer.show{display:flex;}
-  .reveal-emoji{font-size:96px;filter:drop-shadow(0 10px 30px rgba(242,183,5,0.45));animation:pop .5s cubic-bezier(.34,1.56,.64,1);}
-  @keyframes pop{0%{transform:scale(.2) rotate(-10deg);opacity:0}70%{transform:scale(1.12) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(0)}}
-  .reveal-title{font-size:24px;margin:14px 0 4px;}
-  .reveal-pts{color:var(--gold);font-weight:800;font-size:15px;}
-  .reveal-sub{opacity:.6;font-size:13px;margin-top:14px;max-width:280px;}
+  .reveal-card{width:190px;height:230px;border-radius:22px;background:#fff;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 30px 60px rgba(0,0,0,0.4);animation:cardPop .55s cubic-bezier(.15,1.5,.4,1);}
+  .reveal-card .foil-border{padding:3px;}
+  @keyframes cardPop{0%{transform:scale(.3) rotateY(90deg);opacity:0;}60%{transform:scale(1.08) rotateY(-8deg);opacity:1;}100%{transform:scale(1) rotateY(0);}}
+  .reveal-emoji{font-size:64px;position:relative;z-index:2;}
+  .reveal-name{font-size:16px;font-weight:800;margin-top:8px;position:relative;z-index:2;color:var(--ink);}
+  .reveal-title{font-size:22px;margin:18px 0 4px;color:#fff;}
+  .reveal-pts{color:var(--amber);font-weight:800;font-size:15px;}
+  .reveal-sub{opacity:.7;font-size:12.5px;margin-top:12px;max-width:270px;color:#fff;}
 
-  .cert{background:var(--parchment);color:#1B1533;border-radius:18px;padding:32px 24px;text-align:center;border:6px double #c98f00;position:relative;overflow:hidden;}
-  .cert-eyebrow{font-size:11.5px;letter-spacing:3px;font-weight:800;color:var(--teal);position:relative;}
-  .cert-title{font-size:26px;margin:8px 0 4px;position:relative;}
-  .cert-name{font-family:'Baloo Bhaijaan 2';font-size:29px;color:#b3790a;margin:14px 0;position:relative;}
-  .cert-body{font-size:13.5px;line-height:1.9;opacity:.75;max-width:340px;margin:0 auto;position:relative;}
-  .cert-emojis{font-size:26px;letter-spacing:10px;margin:18px 0 6px;position:relative;}
-  .cert-date{font-size:11.5px;opacity:.5;margin-top:16px;font-weight:700;position:relative;}
+  /* ---- الشهادة ---- */
+  .cert{background:#fff;border-radius:20px;padding:34px 24px;text-align:center;box-shadow:0 20px 45px rgba(15,60,120,0.15);position:relative;overflow:hidden;}
+  .cert::before{content:'';position:absolute;top:0;right:0;left:0;height:5px;background:linear-gradient(90deg, var(--electric), var(--teal), var(--violet));}
+  .cert-eyebrow{font-size:11px;letter-spacing:3px;font-weight:800;color:var(--teal);}
+  .cert-title{font-size:26px;margin:10px 0 4px;}
+  .cert-name{font-family:'Baloo Bhaijaan 2';font-size:28px;color:var(--electric);margin:14px 0;}
+  .cert-body{font-size:13px;line-height:1.9;color:var(--ink-soft);max-width:340px;margin:0 auto;}
+  .cert-emojis{font-size:22px;letter-spacing:6px;margin:16px 0 6px;}
+  .cert-date{font-size:11px;color:var(--ink-soft);margin-top:16px;font-weight:700;}
 
-  .empty-note{font-size:12.5px;opacity:.5;text-align:center;margin-top:10px;line-height:1.7;}
-  .back-link{font-size:13px;font-weight:800;color:var(--gold);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;}
-
-  .cust-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.045);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px;}
-  .cust-em{font-size:26px;width:46px;text-align:center;}
+  /* ---- تخصيص الشخصيات ---- */
+  .cust-card{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #E6EDF5;border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+  .cust-em{font-size:22px;width:38px;text-align:center;}
   .cust-info{flex:1;}
-  .cust-name{font-weight:800;font-size:14px;}
-  .cust-status{font-size:11.5px;opacity:.55;font-weight:700;margin-top:2px;}
-  .cust-status.ok{color:var(--teal);opacity:1;}
-  .cust-file{font-size:11px;color:var(--parchment);max-width:110px;}
+  .cust-name{font-weight:800;font-size:13.5px;}
+  .cust-status{font-size:10.5px;color:var(--ink-soft);font-weight:700;margin-top:2px;}
+  .cust-status.ok{color:var(--teal);}
+  .empty-note{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:10px;line-height:1.7;}
 </style>
 </head>
 <body>
@@ -123,52 +132,45 @@
 
   <!-- LOGIN -->
   <section class="screen active" id="screen-login">
-    <div class="login-hero">
-      <div class="emoji-row">🐰🦁🤖⭐</div>
-      <h1>مستكشفو المعرفة</h1>
-      <p>مغامرة واقع معزز داخل المدرسة — تجول بين المرافق، افتح الكاميرا في كل مكان، وشاهد الشخصيات تظهر أمامك.</p>
-    </div>
-    <div class="card">
-      <label class="field-label">اسم المستكشف الصغير</label>
+    <div class="login-card">
+      <div class="badge-icon">🧭</div>
+      <h1 class="display">مستكشفو المعرفة</h1>
+      <p>اجمع بطاقات الاستكشاف العشر داخل المدرسة</p>
+      <label class="field-label">اسم المستكشف</label>
       <input type="text" id="nameInput" placeholder="اكتب اسمك هنا..." maxlength="30">
-      <button class="btn btn-gold mt14" id="startBtn">ابدأ المغامرة 🧭</button>
-      <div class="empty-note">بياناتك تُحفظ باسمك حتى تقدر تكمل من أي جهاز داخل المدرسة.</div>
+      <button class="btn btn-electric mt14" id="startBtn">ابدأ المغامرة</button>
     </div>
-    <a class="back-link" id="toCustomize" href="#" style="display:block;text-align:center;margin-top:20px;">🎬 تخصيص الشخصيات بفيديو حقيقي (للمعلّم)</a>
+    <a class="link-quiet" id="toCustomize" href="#">🎬 تخصيص الشخصيات بفيديو حقيقي (للمعلّم)</a>
   </section>
 
-  <!-- MAP / DASHBOARD -->
+  <!-- MAP -->
   <section class="screen" id="screen-map">
     <div class="topbar">
       <div class="brand">
         <div class="brand-badge">🧭</div>
         <div>
           <div class="brand-title" id="hiName">أهلاً يا مستكشف</div>
-          <div class="brand-sub">خريطة المغامرة</div>
+          <div class="brand-sub">بطاقاتي</div>
         </div>
       </div>
-      <div class="score-pill">⭐ <span class="num" id="scoreVal">0</span></div>
+      <div class="score-chip num" id="scoreChip">⚡ <span id="scoreVal">0</span></div>
     </div>
 
-    <div class="trail-head">
-      <h2>سجل الاكتشافات</h2>
-      <span id="countVal">0 / 8</span>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="map-title display">بطاقاتي</div>
+    <div class="map-sub" id="countVal">0 من 10 مكتشفة</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="card-grid" id="cardGrid"></div>
 
-    <div class="empty-note" style="text-align:right;margin:0 0 6px;">هذي سجل إنجازاتك بس — افتح الكاميرا وتجوّل بالمدرسة، والشخصيات تفاجئك وحدها.</div>
-    <div class="trail" id="trailList"></div>
-
-    <div class="fab-wrap">
-      <button class="btn btn-gold" id="exploreBtn">📷 افتح الكاميرا واستكشف</button>
-      <button class="btn btn-ghost mt10" id="certBtnMap" style="display:none;">🏅 استلم شهادتي ووسامي</button>
+    <div class="mt20">
+      <button class="btn btn-electric" id="exploreBtn">📷 افتح الكاميرا واستكشف</button>
+      <button class="btn btn-teal mt10" id="certBtnMap" style="display:none;">🏅 استلم شهادتي ووسامي</button>
     </div>
-    <a class="back-link" id="switchUser" href="#" style="display:block;text-align:center;margin-top:20px;">تبديل المستخدم</a>
+    <a class="link-quiet" id="switchUser" href="#">تبديل المستخدم</a>
   </section>
 
   <!-- SCANNER -->
   <section class="screen" id="screen-scan">
-    <a class="back-link" id="backFromScan">→ رجوع للخريطة</a>
+    <a class="back-link" id="backFromScan">→ رجوع لبطاقاتي</a>
     <div class="target-banner">
       <div class="em" id="targetEmoji">🔍</div>
       <div class="tx">
@@ -186,36 +188,39 @@
 
   <!-- CERTIFICATE -->
   <section class="screen" id="screen-cert">
-    <a class="back-link" id="backFromCert">→ رجوع للخريطة</a>
+    <a class="back-link" id="backFromCert">→ رجوع لبطاقاتي</a>
     <div class="cert" id="certBox">
       <div class="cert-eyebrow">وسام مستكشف المعرفة</div>
-      <div class="cert-title">شهادة إنجاز</div>
+      <div class="cert-title display">شهادة إنجاز</div>
       <div class="cert-name" id="certName">اسم الطالب</div>
-      <div class="cert-body">أكمل رحلة استكشاف المعرفة داخل المدرسة، وجمع جميع الشخصيات والعناصر التعليمية الثمانية بنجاح وتميّز.</div>
-      <div class="cert-emojis">🐰🦁🤖⭐🍎📚🔑💎</div>
+      <div class="cert-body">أكمل رحلة استكشاف المعرفة داخل المدرسة، وجمع جميع البطاقات العشر بنجاح وتميّز.</div>
+      <div class="cert-emojis">🐰🦁🤖⭐🍎📚🔑💎🦉🚀</div>
       <div class="cert-date" id="certDate">التاريخ</div>
     </div>
     <button class="btn btn-teal mt20" id="printCertBtn">🖨️ طباعة / حفظ الشهادة</button>
   </section>
 
-  <!-- CUSTOMIZE (teacher: upload real green-screen video per character) -->
+  <!-- CUSTOMIZE -->
   <section class="screen" id="screen-customize">
     <a class="back-link" id="backFromCustomize">→ رجوع</a>
-    <h2 style="font-size:20px;margin:0 0 4px;">فيديو حقيقي لكل شخصية</h2>
-    <p style="opacity:.6;font-size:13px;line-height:1.9;margin:0 0 14px;">
-      ارفع لكل شخصية إما <b>صورة PNG بخلفية شفافة</b> (تظهر بتأثير شبه-3D تدور وتتمايل تلقائيًا) أو <b>فيديو بخلفية خضراء صافية</b> (يشيل الموقع الخلفية تلقائيًا). إذا ما رفعت شي لشخصية معيّنة، بتظهر برمزها التعبيري كخيار احتياطي.
+    <h2 class="display" style="font-size:21px;margin:0 0 4px;">فيديو أو صورة حقيقية لكل شخصية</h2>
+    <p style="color:var(--ink-soft);font-size:12.5px;line-height:1.9;margin:0 0 14px;">
+      ارفع لكل شخصية إما <b>صورة PNG بخلفية شفافة</b> (تظهر بتأثير شبه-3D يدور ويتمايل) أو <b>فيديو بخلفية خضراء صافية</b> (يشيل الموقع الخلفية تلقائيًا). إذا ما رفعت شي، بتظهر برمزها التعبيري كخيار احتياطي.
     </p>
     <div id="customizeList"></div>
   </section>
 
 </div>
 
-<!-- REVEAL OVERLAY -->
 <div class="reveal-layer" id="revealLayer">
-  <div class="reveal-emoji" id="revealEmoji">🐰</div>
-  <div class="reveal-title" id="revealTitle">أرنب الحروف</div>
-  <div class="reveal-pts" id="revealPts">+10 نقاط</div>
-  <div class="reveal-sub">تمت إضافته إلى سجل إنجازاتك! تابع البحث عن بقية الشخصيات.</div>
+  <div class="reveal-card">
+    <div class="foil-border" id="revealFoil"></div>
+    <div class="reveal-emoji" id="revealEmoji">🐰</div>
+    <div class="reveal-name" id="revealName">أرنب الحروف</div>
+  </div>
+  <div class="reveal-title display">بطاقة جديدة!</div>
+  <div class="reveal-pts num" id="revealPts">+10 نقاط</div>
+  <div class="reveal-sub">انضافت لمجموعتك! تابع البحث عن بقية البطاقات.</div>
 </div>
 
 <script>
@@ -223,6 +228,37 @@ const $ = id => document.getElementById(id);
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
+}
+
+let audioCtx = null;
+function tone(freq, dur=0.15, type='sine', vol=0.16, delay=0){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audioCtx.currentTime + delay;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }catch(e){}
+}
+function sfxTap(){ tone(680, 0.06, 'sine', 0.1); }
+function sfxCard(){ tone(392,0.1,'sine',0.12); tone(523,0.14,'sine',0.14,0.06); tone(784,0.22,'sine',0.15,0.13); }
+function sfxWin(){ [523,659,784,1046].forEach((f,i)=> tone(f, 0.3, 'sine', 0.12, i*0.09)); }
+document.addEventListener('click', (e)=>{ if(e.target.closest('.btn')) sfxTap(); }, true);
+
+function animateNumber(el, from, to, duration=650){
+  if(from === to){ el.textContent = to; return; }
+  const start = performance.now();
+  function step(now){
+    const p = Math.min(1, (now-start)/duration);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(from + (to-from)*eased);
+    if(p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
 
 const CHARACTERS = [
@@ -234,6 +270,8 @@ const CHARACTERS = [
   {id:'KE-06', name:'كتاب الأسرار',   emoji:'📚', pts:20, hint:'ركن القراءة'},
   {id:'KE-07', name:'مفتاح النجاح',   emoji:'🔑', pts:20, hint:'مكتب الإدارة'},
   {id:'KE-08', name:'الجوهرة الذهبية',emoji:'💎', pts:30, hint:'مسرح المدرسة'},
+  {id:'KE-09', name:'بومة الحكمة',    emoji:'🦉', pts:20, hint:'قاعة الاجتماعات'},
+  {id:'KE-10', name:'صاروخ الطموح',   emoji:'🚀', pts:25, hint:'الساحة الخارجية'},
 ];
 const TOTAL_PTS = CHARACTERS.reduce((s,c)=>s+c.pts,0);
 
@@ -246,11 +284,13 @@ let baseAlpha = null, baseBeta = null;
 let targetYawOffset = 0, targetPitchOffset = 0;
 let lastYawDiff = 999, lastPitchDiff = 999;
 let inViewSince = null;
-let characterMedia = {}; // { [id]: {video, keyCanvas, keyCtx} }
-const DWELL_MS = 1300; // مدة تثبيت الكاميرا على الشخصية قبل "الإمساك" بها
-const HALF_FOV_YAW = 32;  // نصف مجال رؤية الكاميرا أفقيًا (تقريبي)
-const HALF_FOV_PITCH = 24; // نصف مجال رؤية الكاميرا رأسيًا (تقريبي)
+let characterMedia = {};
+const DWELL_MS = 2600;
+const REVEAL_MS = 3800;
+const HALF_FOV_YAW = 40;
+const HALF_FOV_PITCH = 32;
 
+/* ---------- تخصيص الشخصيات ---------- */
 $('toCustomize').onclick = (e)=>{ e.preventDefault(); buildCustomizeScreen(); showScreen('screen-customize'); };
 $('backFromCustomize').onclick = (e)=>{ e.preventDefault(); showScreen('screen-login'); };
 
@@ -267,46 +307,39 @@ function buildCustomizeScreen(){
         <div class="cust-name">${c.name}</div>
         <div class="cust-status" id="custStatus-${c.id}">بدون فيديو — سيظهر الرمز التعبيري</div>
       </div>
-      <input type="file" accept="image/png,image/webp,video/*" id="custFile-${c.id}" style="width:110px;font-size:11px;color:var(--parchment);">`;
+      <input type="file" accept="image/png,image/webp,video/*" id="custFile-${c.id}" style="width:100px;font-size:10.5px;">`;
     list.appendChild(row);
     $(`custFile-${c.id}`).addEventListener('change', (e)=> handleMediaUpload(c.id, e.target.files[0]));
   });
 }
-
 function handleMediaUpload(id, file){
   if(!file) return;
   if(file.type.startsWith('video/')) return handleVideoUpload(id, file);
   return handleImageUpload(id, file);
 }
-
 function handleImageUpload(id, file){
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = ()=>{
     characterMedia[id] = { type:'image', img, seed: Math.random()*10 };
     const statusEl = $(`custStatus-${id}`);
-    statusEl.textContent = '✅ ' + file.name + ' — يظهر بتأثير شبه-3D (يميل ويدور)';
+    statusEl.textContent = '✅ ' + file.name + ' — تأثير شبه-3D';
     statusEl.classList.add('ok');
   };
   img.src = url;
 }
-
 function handleVideoUpload(id, file){
-  if(!file) return;
   const url = URL.createObjectURL(file);
   const video = document.createElement('video');
   video.src = url; video.loop = true; video.muted = true; video.playsInline = true;
-  video.crossOrigin = 'anonymous';
   video.play().catch(()=>{});
   const keyCanvas = document.createElement('canvas');
   const keyCtx = keyCanvas.getContext('2d', { willReadFrequently: true });
   characterMedia[id] = { type:'video', video, keyCanvas, keyCtx };
   const statusEl = $(`custStatus-${id}`);
-  statusEl.textContent = '✅ ' + file.name + ' — جاهز، سيظهر بدون خلفية';
+  statusEl.textContent = '✅ ' + file.name + ' — بدون خلفية';
   statusEl.classList.add('ok');
 }
-
-/* إزالة الخلفية الخضراء وإرجاع كانفاس شفاف يحتوي الإطار الحالي فقط */
 function chromaKeyFrame(media){
   const { video, keyCanvas, keyCtx } = media;
   if(video.readyState < 2 || !video.videoWidth) return null;
@@ -318,13 +351,13 @@ function chromaKeyFrame(media){
   const d = frame.data;
   for(let i=0; i<d.length; i+=4){
     const r=d[i], g=d[i+1], b=d[i+2];
-    if(g > 85 && g > r*1.12 && g > b*1.12){ d[i+3] = 0; } // بكسل أخضر → شفاف
+    if(g > 85 && g > r*1.12 && g > b*1.12){ d[i+3] = 0; }
   }
   keyCtx.putImageData(frame, 0, 0);
   return keyCanvas;
 }
 
-/* ---------- storage ---------- */
+/* ---------- تخزين ---------- */
 async function loadProgress(name){
   try{
     const r = await window.storage.get('progress:'+name, true);
@@ -337,40 +370,49 @@ async function saveProgress(){
   catch(e){ console.error('تعذر الحفظ', e); }
 }
 
-/* ---------- login ---------- */
+/* ---------- تسجيل الدخول ---------- */
 $('startBtn').onclick = async () => {
   const val = $('nameInput').value.trim();
   if(!val){ $('nameInput').focus(); return; }
   state = await loadProgress(val);
   state.name = val;
-  renderMap();
+  renderMap(true);
   showScreen('screen-map');
 };
 $('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') $('startBtn').click(); });
 $('switchUser').onclick = (e)=>{ e.preventDefault(); showScreen('screen-login'); };
 
-/* ---------- map ---------- */
-function renderMap(){
+/* ---------- شاشة البطاقات (عرض فقط، بدون اختيار مباشر) ---------- */
+function renderMap(isFirstRender){
   $('hiName').textContent = 'أهلاً ' + state.name;
-  $('scoreVal').textContent = state.points;
-  $('countVal').textContent = state.collected.length + ' / ' + CHARACTERS.length;
+  const prevScore = Number($('scoreVal').textContent) || 0;
+  animateNumber($('scoreVal'), isFirstRender ? state.points : prevScore, state.points);
+  $('countVal').textContent = state.collected.length + ' من ' + CHARACTERS.length + ' مكتشفة';
   $('progressFill').style.width = Math.round((state.points/TOTAL_PTS)*100) + '%';
 
-  const list = $('trailList');
-  list.innerHTML = '';
-  CHARACTERS.forEach(c=>{
+  const grid = $('cardGrid');
+  grid.innerHTML = '';
+  CHARACTERS.forEach((c, idx)=>{
     const done = state.collected.includes(c.id);
-    const node = document.createElement('div');
-    node.className = 'node' + (done?' done':'');
-    node.innerHTML = `
-      <div class="node-dot">${c.emoji}</div>
-      <div class="node-info">
-        <div class="node-name">${c.name}</div>
-        <div class="node-meta">${done ? ('تم الاكتشاف • +'+c.pts+' نقطة') : ('تلميح: '+c.hint)}</div>
-      </div>
-      <div class="node-check">✓</div>
-      <div class="node-arrow" style="display:none;"></div>`;
-    list.appendChild(node);
+    const card = document.createElement('div');
+    card.className = 'char-card ' + (done ? 'unlocked' : 'locked');
+    if(done){
+      card.innerHTML = `
+        <div class="foil-border" style="--ang:${idx*57}deg"></div>
+        <div class="shine"></div>
+        <div class="card-inner">
+          <span class="emo">${c.emoji}</span>
+          <div class="cname">${c.name}</div>
+          <div class="cpts num">+${c.pts}</div>
+        </div>`;
+    }else{
+      card.innerHTML = `
+        <span class="lock-ic">🔒</span>
+        <span class="emo">${c.emoji}</span>
+        <div class="cname mystery">؟ ؟ ؟</div>
+        <div class="cpts num">--</div>`;
+    }
+    grid.appendChild(card);
   });
 
   const allDone = state.collected.length === CHARACTERS.length;
@@ -386,38 +428,30 @@ $('exploreBtn').onclick = ()=>{
 $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen('screen-map'); };
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
 
-/* ---------- اتجاه الجهاز: نحدد "مكان" عشوائي مخفي للشخصية داخل الغرفة ---------- */
-function angDiff(a, b){ return ((a - b + 540) % 360) - 180; } // فرق زاوية بين -180 و180
-
+/* ---------- اتجاه الجهاز ---------- */
+function angDiff(a, b){ return ((a - b + 540) % 360) - 180; }
 function handleOrientation(e){
   if(e.alpha == null) return;
   const alpha = (typeof e.webkitCompassHeading === 'number') ? e.webkitCompassHeading : e.alpha;
   const beta = e.beta ?? 0;
   if(baseAlpha === null){
-    baseAlpha = alpha;
-    baseBeta = beta;
-    // نختار جهة عشوائية بعيدة شوي عشان يحتاج يلف فعلاً يدوّرها
+    baseAlpha = alpha; baseBeta = beta;
     const dir = Math.random() < 0.5 ? 1 : -1;
-    targetYawOffset = dir * (55 + Math.random()*80); // بين 55 و135 درجة يمين أو يسار
-    targetPitchOffset = (Math.random()*26) - 13; // ميل بسيط فوق أو تحت
+    targetYawOffset = dir * (45 + Math.random()*70);
+    targetPitchOffset = (Math.random()*22) - 11;
   }
   const curYawDiff = angDiff(alpha, baseAlpha) - targetYawOffset;
-  const curPitchDiff = (beta - baseBeta) - targetPitchOffset;
   lastYawDiff = angDiff(curYawDiff, 0);
-  lastPitchDiff = curPitchDiff;
+  lastPitchDiff = (beta - baseBeta) - targetPitchOffset;
 }
-
 async function enableOrientation(){
   orientationSupported = false;
   baseAlpha = null; baseBeta = null;
   if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
     try{
       const res = await DeviceOrientationEvent.requestPermission();
-      if(res === 'granted'){
-        window.addEventListener('deviceorientation', handleOrientation);
-        orientationSupported = true;
-      }
-    }catch(e){ /* المستخدم رفض الإذن أو غير مدعوم */ }
+      if(res === 'granted'){ window.addEventListener('deviceorientation', handleOrientation); orientationSupported = true; }
+    }catch(e){}
   }else if(typeof DeviceOrientationEvent !== 'undefined'){
     window.addEventListener('deviceorientation', handleOrientation);
     orientationSupported = true;
@@ -470,33 +504,30 @@ function renderAR(){
   ctx.clearRect(0,0,canvas.width, canvas.height);
   const now = performance.now();
 
-  // بدون دعم اتجاه: نفس السلوك القديم (تظهر بالمنتصف مباشرة)
   const yawDiff = orientationSupported ? lastYawDiff : 0;
   const pitchDiff = orientationSupported ? lastPitchDiff : 0;
   const visible = Math.abs(yawDiff) < HALF_FOV_YAW && Math.abs(pitchDiff) < HALF_FOV_PITCH;
 
-  // إحساس "الدفء" — كل ما قرّبت الاتجاه الصح يزيد التوهج الذهبي حول الإطار
-  const dist = Math.min(1, Math.hypot(yawDiff, pitchDiff) / 140);
-  const warmth = 1 - dist; // 0 بارد → 1 حار
-  $('warmthGlow').style.boxShadow = visible ? 'none' : `inset 0 0 ${40+warmth*70}px ${6+warmth*10}px rgba(242,183,5,${0.05+warmth*0.35})`;
+  const dist = Math.min(1, Math.hypot(yawDiff, pitchDiff) / 150);
+  const warmth = 1 - dist;
+  $('warmthGlow').style.boxShadow = visible ? 'none' : `inset 0 0 ${40+warmth*70}px ${6+warmth*10}px rgba(47,111,237,${0.05+warmth*0.35})`;
 
   if(visible){
     if(inViewSince === null) inViewSince = now;
     const dwell = Math.min(1, (now - inViewSince) / DWELL_MS);
-    const x = canvas.width/2 + (yawDiff/HALF_FOV_YAW) * (canvas.width*0.32);
-    const y = canvas.height/2 + (pitchDiff/HALF_FOV_PITCH) * (canvas.height*0.28);
-    const bounce = Math.sin(now/280) * 8;
+    const x = canvas.width/2 + (yawDiff/HALF_FOV_YAW) * (canvas.width*0.3);
+    const y = canvas.height/2 + (pitchDiff/HALF_FOV_PITCH) * (canvas.height*0.26);
+    const bounce = Math.sin(now/320) * 7;
     const fontSize = Math.min(canvas.width, canvas.height) * 0.24;
 
     ctx.beginPath();
     ctx.arc(x, y, fontSize*0.62, -Math.PI/2, -Math.PI/2 + dwell*Math.PI*2);
-    ctx.strokeStyle = '#F2B705';
+    ctx.strokeStyle = '#2F6FED';
     ctx.lineWidth = 6;
     ctx.lineCap = 'round';
     ctx.stroke();
 
     const media = characterMedia[currentTarget.id];
-
     if(media && media.type === 'video'){
       const keyed = chromaKeyFrame(media);
       if(keyed){
@@ -510,34 +541,26 @@ function renderAR(){
     }else if(media && media.type === 'image' && media.img.complete){
       const size = fontSize * 1.9;
       const t = now/900 + media.seed;
-      const rotY = Math.sin(t) * 0.55; // تمايل دوراني وهمي حول المحور الرأسي
-      const squish = Math.max(0.35, Math.cos(rotY)); // يضيق كل ما "دار" أكثر
+      const rotY = Math.sin(t) * 0.55;
+      const squish = Math.max(0.35, Math.cos(rotY));
       const skew = Math.sin(rotY) * 0.22;
       const groundY = y + size*0.42 + bounce*0.4;
-
-      // ظل أرضي يعطي إحساس إنها "واقفة" بالمكان
       ctx.save();
       ctx.translate(x, groundY);
       ctx.scale(squish, 1);
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.beginPath();
-      ctx.ellipse(0, 0, size*0.26, size*0.07, 0, 0, Math.PI*2);
-      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0,0,size*0.26,size*0.07,0,0,Math.PI*2); ctx.fill();
       ctx.restore();
-
       ctx.save();
       ctx.translate(x, y + bounce*0.4);
-      ctx.transform(squish, 0, skew, 1, 0, 0); // تمايل شبه-3D
-      ctx.shadowColor = 'rgba(0,0,0,0.45)';
-      ctx.shadowBlur = 16;
+      ctx.transform(squish, 0, skew, 1, 0, 0);
+      ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 16;
       ctx.drawImage(media.img, -size/2, -size/2, size, size);
       ctx.restore();
     }else{
       ctx.font = fontSize + 'px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 22;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 22;
       ctx.fillText(currentTarget.emoji, x, y + bounce);
     }
 
@@ -569,18 +592,22 @@ async function finalizeCatch(character){
   showReveal(character, isNew);
 }
 function showReveal(character, isNew){
+  sfxCard();
+  if(state.collected.length === CHARACTERS.length){ setTimeout(sfxWin, 500); }
+  const idx = CHARACTERS.findIndex(c=>c.id===character.id);
+  $('revealFoil').style.setProperty('--ang', (idx*57)+'deg');
   $('revealEmoji').textContent = character.emoji;
-  $('revealTitle').textContent = character.name;
-  $('revealPts').textContent = isNew ? ('+'+character.pts+' نقاط 🎉') : 'تم اكتشافه سابقًا';
+  $('revealName').textContent = character.name;
+  $('revealPts').textContent = isNew ? ('+'+character.pts+' نقاط') : 'مكتشفة سابقًا';
   $('revealLayer').classList.add('show');
   setTimeout(()=>{
     $('revealLayer').classList.remove('show');
-    renderMap();
+    renderMap(false);
     showScreen('screen-map');
-  }, 2200);
+  }, REVEAL_MS);
 }
 
-/* ---------- certificate ---------- */
+/* ---------- الشهادة ---------- */
 function renderCert(){
   $('certName').textContent = state.name;
   $('certDate').textContent = new Date().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
