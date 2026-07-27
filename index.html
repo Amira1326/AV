@@ -6,6 +6,8 @@
 <title>مستكشفو المعرفة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
 <style>
   :root{
     --bg:#EEF3F9;
@@ -26,7 +28,8 @@
       var(--bg);
     font-family:'Tajawal',sans-serif;color:var(--ink);min-height:100vh;
   }
-  #app{max-width:460px;margin:0 auto;min-height:100vh;position:relative;padding:22px 18px 44px;}
+  #app{max-width:460px;margin:0 auto;min-height:100vh;position:relative;z-index:1;padding:22px 18px 44px;}
+  #bgScene{position:fixed;inset:0;z-index:0;overflow:hidden;background-image:url('ai.png');background-size:cover;background-position:center;background-repeat:no-repeat;}
   .display{font-family:'Baloo Bhaijaan 2';}
   .num{font-family:'JetBrains Mono';}
   .mt10{margin-top:10px;}.mt14{margin-top:14px;}.mt20{margin-top:20px;}
@@ -128,6 +131,7 @@
 </style>
 </head>
 <body>
+<div id="bgScene"></div>
 <div id="app">
 
   <!-- LOGIN -->
@@ -178,11 +182,7 @@
         <div id="targetHint">لُف بالكاميرا حواليك ببطء وشوف وين تحس بدفء أكثر</div>
       </div>
     </div>
-    <div class="scan-frame">
-      <video id="video" playsinline autoplay muted></video>
-      <canvas id="arOverlay"></canvas>
-      <div id="warmthGlow"></div>
-    </div>
+    <div class="scan-frame" id="arContainer"></div>
     <div class="scan-status" id="scanStatus">جاري تشغيل الكاميرا...</div>
   </section>
 
@@ -207,6 +207,18 @@
     <p style="color:var(--ink-soft);font-size:12.5px;line-height:1.9;margin:0 0 14px;">
       ارفع لكل شخصية إما <b>صورة PNG بخلفية شفافة</b> (تظهر بتأثير شبه-3D يدور ويتمايل) أو <b>فيديو بخلفية خضراء صافية</b> (يشيل الموقع الخلفية تلقائيًا). إذا ما رفعت شي، بتظهر برمزها التعبيري كخيار احتياطي.
     </p>
+    <div class="cust-card" style="border-color:var(--electric);">
+      <div class="cust-info">
+        <div class="cust-name">🖼️ ملف التعرف على البوسترات (targets.mind)</div>
+        <div class="cust-status" id="targetsStatus">لم يتم رفعه بعد — لازم قبل ما تفتح الكاميرا</div>
+        <div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;line-height:1.7;">
+          حمّل البوسترات العشرة، ارفعها بنفس الترتيب (01→10) على
+          <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank" rel="noopener">أداة MindAR المجانية</a>،
+          ونزّل ملف targets.mind وارفعه هنا.
+        </div>
+      </div>
+      <input type="file" accept=".mind" id="targetsFileInput" style="width:100px;font-size:10.5px;">
+    </div>
     <div id="customizeList"></div>
   </section>
 
@@ -276,23 +288,26 @@ const CHARACTERS = [
 const TOTAL_PTS = CHARACTERS.reduce((s,c)=>s+c.pts,0);
 
 let state = { name:null, collected:[], points:0 };
-let videoStream = null;
 let scanning = false;
 let currentTarget = null;
-let orientationSupported = false;
-let baseAlpha = null, baseBeta = null;
-let targetYawOffset = 0, targetPitchOffset = 0;
-let lastYawDiff = 999, lastPitchDiff = 999;
-let inViewSince = null;
 let characterMedia = {};
-const DWELL_MS = 2600;
+let targetsFileURL = null;
+let mindarThree = null;
+let arAnchors = [];
+const DWELL_MS = 1600;
 const REVEAL_MS = 3800;
-const HALF_FOV_YAW = 40;
-const HALF_FOV_PITCH = 32;
 
 /* ---------- تخصيص الشخصيات ---------- */
 $('toCustomize').onclick = (e)=>{ e.preventDefault(); buildCustomizeScreen(); showScreen('screen-customize'); };
 $('backFromCustomize').onclick = (e)=>{ e.preventDefault(); showScreen('screen-login'); };
+$('targetsFileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(targetsFileURL) URL.revokeObjectURL(targetsFileURL);
+  targetsFileURL = URL.createObjectURL(file);
+  $('targetsStatus').textContent = '✅ ' + file.name + ' — جاهز، الكاميرا بتتعرف على البوسترات';
+  $('targetsStatus').classList.add('ok');
+});
 
 function buildCustomizeScreen(){
   const list = $('customizeList');
@@ -422,163 +437,127 @@ $('certBtnMap').onclick = ()=>{ renderCert(); showScreen('screen-cert'); };
 $('exploreBtn').onclick = ()=>{
   const remaining = CHARACTERS.filter(c=>!state.collected.includes(c.id));
   if(remaining.length === 0){ renderCert(); showScreen('screen-cert'); return; }
-  const pick = remaining[Math.floor(Math.random()*remaining.length)];
-  openScanner(pick);
+  openScanner();
 };
 $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen('screen-map'); };
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
 
 /* ---------- اتجاه الجهاز ---------- */
-function angDiff(a, b){ return ((a - b + 540) % 360) - 180; }
-function handleOrientation(e){
-  if(e.alpha == null) return;
-  const alpha = (typeof e.webkitCompassHeading === 'number') ? e.webkitCompassHeading : e.alpha;
-  const beta = e.beta ?? 0;
-  if(baseAlpha === null){
-    baseAlpha = alpha; baseBeta = beta;
-    const dir = Math.random() < 0.5 ? 1 : -1;
-    targetYawOffset = dir * (45 + Math.random()*70);
-    targetPitchOffset = (Math.random()*22) - 11;
+/* ---------- الماسح: تعرّف حقيقي على البوسترات عبر MindAR ---------- */
+async function openScanner(){
+  if(!targetsFileURL){
+    alert('لازم أول ترفع ملف targets.mind من "تخصيص الشخصيات" قبل فتح الكاميرا.');
+    buildCustomizeScreen();
+    showScreen('screen-customize');
+    return;
   }
-  const curYawDiff = angDiff(alpha, baseAlpha) - targetYawOffset;
-  lastYawDiff = angDiff(curYawDiff, 0);
-  lastPitchDiff = (beta - baseBeta) - targetPitchOffset;
-}
-async function enableOrientation(){
-  orientationSupported = false;
-  baseAlpha = null; baseBeta = null;
-  if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
-    try{
-      const res = await DeviceOrientationEvent.requestPermission();
-      if(res === 'granted'){ window.addEventListener('deviceorientation', handleOrientation); orientationSupported = true; }
-    }catch(e){}
-  }else if(typeof DeviceOrientationEvent !== 'undefined'){
-    window.addEventListener('deviceorientation', handleOrientation);
-    orientationSupported = true;
-  }
-}
-function disableOrientation(){
-  window.removeEventListener('deviceorientation', handleOrientation);
-  baseAlpha = null; baseBeta = null; lastYawDiff = 999; lastPitchDiff = 999;
-}
-
-/* ---------- الماسح ---------- */
-async function openScanner(character){
-  currentTarget = character;
-  inViewSince = null;
+  currentTarget = null;
   $('targetEmoji').textContent = '🔍';
-  $('targetName').textContent = 'شخصية مجهولة تنتظرك بمكان ما...';
-  $('targetHint').textContent = 'لُف بالكاميرا حواليك ببطء وشوف وين تحس بدفء أكثر';
+  $('targetName').textContent = 'وجّه الكاميرا على أي بوستر تلقاه بالمدرسة';
+  $('targetHint').textContent = 'قف قدام البوستر مباشرة وثبّت الكاميرا عليه';
   showScreen('screen-scan');
   $('scanStatus').textContent = 'جاري تشغيل الكاميرا...';
-  await enableOrientation();
   try{
-    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    const video = $('video');
-    video.srcObject = videoStream;
-    await video.play();
+    mindarThree = new MINDAR.IMAGE.MindARThree({
+      container: $('arContainer'),
+      imageTargetSrc: targetsFileURL,
+    });
+    const { renderer, scene, camera } = mindarThree;
+    arAnchors = [];
+
+    CHARACTERS.forEach((character, idx)=>{
+      const anchor = mindarThree.addAnchor(idx);
+      const spriteMat = makeEmojiSpriteMaterial(character.emoji);
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.position.set(0, 0.15, 0);
+      anchor.group.add(sprite);
+      arAnchors.push({ idx, character, sprite, spriteMat, found:false, foundAt:0 });
+
+      anchor.onTargetFound = ()=>{
+        const a = arAnchors[idx];
+        a.found = true; a.foundAt = performance.now();
+        currentTarget = character;
+        $('targetEmoji').textContent = '🔍';
+        $('targetName').textContent = 'لقيتها! ثبّت الكاميرا شوي...';
+        $('targetHint').textContent = '';
+      };
+      anchor.onTargetLost = ()=>{
+        arAnchors[idx].found = false;
+        if(currentTarget && currentTarget.id === character.id) currentTarget = null;
+        $('targetName').textContent = 'وجّه الكاميرا على أي بوستر تلقاه بالمدرسة';
+        $('targetHint').textContent = 'قف قدام البوستر مباشرة وثبّت الكاميرا عليه';
+      };
+    });
+
+    await mindarThree.start();
     scanning = true;
-    $('scanStatus').textContent = orientationSupported
-      ? 'لُف بالكاميرا يمين ويسار داخل الغرفة...'
-      : 'جهازك ما يدعم اتجاه الكاميرا — راح تظهر الشخصية تلقائيًا أمامك';
-    requestAnimationFrame(renderAR);
+    $('scanStatus').textContent = 'دوّر بالمدرسة ووجّه الكاميرا على أي بوستر...';
+    renderer.setAnimationLoop(()=>{
+      const now = performance.now();
+      arAnchors.forEach(a=>{
+        if(a.found){
+          updateSpriteMedia(a, now);
+          const dwell = Math.min(1, (now - a.foundAt)/DWELL_MS);
+          const s = 0.9 + dwell*0.3;
+          a.sprite.scale.set(s, s, 1);
+          if(dwell >= 1 && scanning){
+            scanning = false;
+            finalizeCatch(a.character);
+          }
+        }
+      });
+      renderer.render(scene, camera);
+    });
   }catch(err){
-    $('scanStatus').textContent = 'تعذر الوصول للكاميرا. تأكد من السماح بالإذن.';
+    console.error(err);
+    $('scanStatus').textContent = 'تعذر تشغيل الكاميرا أو ملف التعرف. تأكد من الإذن وصحة ملف targets.mind.';
   }
 }
+
+function makeEmojiSpriteMaterial(emoji){
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.font = '180px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, 128, 140);
+  const texture = new THREE.CanvasTexture(c);
+  return new THREE.SpriteMaterial({ map: texture, transparent:true });
+}
+
+function updateSpriteMedia(anchorObj, now){
+  const media = characterMedia[anchorObj.character.id];
+  if(!media) return;
+  if(media.type === 'video'){
+    const keyed = chromaKeyFrame(media);
+    if(keyed){
+      if(!anchorObj.videoTexture){
+        anchorObj.videoTexture = new THREE.CanvasTexture(keyed);
+        anchorObj.spriteMat.map = anchorObj.videoTexture;
+      }
+      anchorObj.videoTexture.needsUpdate = true;
+    }
+  }else if(media.type === 'image' && media.img.complete){
+    if(!anchorObj.imgTexture){
+      anchorObj.imgTexture = new THREE.CanvasTexture(media.img);
+      anchorObj.spriteMat.map = anchorObj.imgTexture;
+      anchorObj.spriteMat.needsUpdate = true;
+    }
+    const t = now/900 + media.seed;
+    anchorObj.sprite.material.rotation = Math.sin(t) * 0.35;
+  }
+}
+
 function stopScanner(){
   scanning = false;
   currentTarget = null;
-  disableOrientation();
-  $('warmthGlow').style.boxShadow = 'none';
-  if(videoStream){ videoStream.getTracks().forEach(t=>t.stop()); videoStream = null; }
-}
-
-function renderAR(){
-  if(!scanning || !currentTarget) return;
-  const canvas = $('arOverlay');
-  const displayW = canvas.clientWidth, displayH = canvas.clientHeight;
-  if(canvas.width !== displayW) canvas.width = displayW;
-  if(canvas.height !== displayH) canvas.height = displayH;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-  const now = performance.now();
-
-  const yawDiff = orientationSupported ? lastYawDiff : 0;
-  const pitchDiff = orientationSupported ? lastPitchDiff : 0;
-  const visible = Math.abs(yawDiff) < HALF_FOV_YAW && Math.abs(pitchDiff) < HALF_FOV_PITCH;
-
-  const dist = Math.min(1, Math.hypot(yawDiff, pitchDiff) / 150);
-  const warmth = 1 - dist;
-  $('warmthGlow').style.boxShadow = visible ? 'none' : `inset 0 0 ${40+warmth*70}px ${6+warmth*10}px rgba(47,111,237,${0.05+warmth*0.35})`;
-
-  if(visible){
-    if(inViewSince === null) inViewSince = now;
-    const dwell = Math.min(1, (now - inViewSince) / DWELL_MS);
-    const x = canvas.width/2 + (yawDiff/HALF_FOV_YAW) * (canvas.width*0.3);
-    const y = canvas.height/2 + (pitchDiff/HALF_FOV_PITCH) * (canvas.height*0.26);
-    const bounce = Math.sin(now/320) * 7;
-    const fontSize = Math.min(canvas.width, canvas.height) * 0.24;
-
-    ctx.beginPath();
-    ctx.arc(x, y, fontSize*0.62, -Math.PI/2, -Math.PI/2 + dwell*Math.PI*2);
-    ctx.strokeStyle = '#2F6FED';
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    const media = characterMedia[currentTarget.id];
-    if(media && media.type === 'video'){
-      const keyed = chromaKeyFrame(media);
-      if(keyed){
-        const size = fontSize * 2.1;
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 20;
-        ctx.drawImage(keyed, x - size/2, y - size/2 + bounce*0.4, size, size);
-        ctx.restore();
-      }
-    }else if(media && media.type === 'image' && media.img.complete){
-      const size = fontSize * 1.9;
-      const t = now/900 + media.seed;
-      const rotY = Math.sin(t) * 0.55;
-      const squish = Math.max(0.35, Math.cos(rotY));
-      const skew = Math.sin(rotY) * 0.22;
-      const groundY = y + size*0.42 + bounce*0.4;
-      ctx.save();
-      ctx.translate(x, groundY);
-      ctx.scale(squish, 1);
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.beginPath(); ctx.ellipse(0,0,size*0.26,size*0.07,0,0,Math.PI*2); ctx.fill();
-      ctx.restore();
-      ctx.save();
-      ctx.translate(x, y + bounce*0.4);
-      ctx.transform(squish, 0, skew, 1, 0, 0);
-      ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 16;
-      ctx.drawImage(media.img, -size/2, -size/2, size, size);
-      ctx.restore();
-    }else{
-      ctx.font = fontSize + 'px sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 22;
-      ctx.fillText(currentTarget.emoji, x, y + bounce);
-    }
-
-    $('scanStatus').textContent = 'لقيتها! ثبّت الكاميرا... ✨';
-
-    if(dwell >= 1){
-      const c = currentTarget;
-      scanning = false;
-      finalizeCatch(c);
-      return;
-    }
-  }else{
-    inViewSince = null;
-    if(scanning && orientationSupported){
-      $('scanStatus').textContent = warmth > 0.6 ? 'اقتربت... استمر باللف 🔥' : 'لُف بالكاميرا يمين ويسار...';
-    }
+  if(mindarThree){
+    try{ mindarThree.renderer.setAnimationLoop(null); mindarThree.stop(); }catch(e){}
+    const container = $('arContainer');
+    while(container.firstChild) container.removeChild(container.firstChild);
+    mindarThree = null;
   }
-  requestAnimationFrame(renderAR);
+  arAnchors = [];
 }
 
 async function finalizeCatch(character){
