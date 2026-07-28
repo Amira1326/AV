@@ -153,6 +153,15 @@
     <div class="login-card" style="text-align:right;">
       <h1 class="display" style="text-align:center;">كيف تلعب؟</h1>
       <button class="link-quiet" id="replayNarration" style="background:none;border:none;cursor:pointer;color:var(--electric);font-size:12.5px;">🔊 اسمع الشرح مرة ثانية</button>
+
+      <div id="howtoVideoWrap" style="display:none;margin-top:14px;">
+        <video id="howtoVideo" controls playsinline style="width:100%;border-radius:12px;background:#000;"></video>
+      </div>
+      <div id="howtoVideoUploadWrap" style="margin-top:14px;background:#F6F9FC;border:2px dashed #D3DEEA;border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:12px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;">🎥 عندك فيديو شرح مسجّل بصوتك؟ ارفعه هنا وبيظهر للطلاب بدل النص</div>
+        <input type="file" accept="video/*" id="howtoVideoInput" style="font-size:11px;">
+      </div>
+
       <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:28px;">🖼️</div>
@@ -167,14 +176,6 @@
           <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);">لما تلقى بوستر، افتح الكاميرا ووجّهها عليه</div>
         </div>
         <div id="posterThumbGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;"></div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="font-size:28px;">✨</div>
-          <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);">شخصية مفاجئة بتطلع فوقه وتنضم لبطاقاتك!</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="font-size:28px;">🏅</div>
-          <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);">اجمع البطاقات العشر واحصل على شهادتك</div>
-        </div>
       </div>
       <button class="btn btn-electric mt20" id="howtoStartBtn">فهمت، يلا نبدأ! 🚀</button>
     </div>
@@ -433,6 +434,17 @@ async function saveProgress(){
 }
 
 /* ---------- تسجيل الدخول ---------- */
+let howtoVideoURL = null;
+$('howtoVideoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(howtoVideoURL) URL.revokeObjectURL(howtoVideoURL);
+  howtoVideoURL = URL.createObjectURL(file);
+  $('howtoVideo').src = howtoVideoURL;
+  $('howtoVideoWrap').style.display = 'block';
+  $('howtoVideoUploadWrap').innerHTML = '<div style="font-size:11.5px;font-weight:800;color:var(--teal);">✅ '+file.name+' — يظهر للطلاب الآن</div>';
+});
+
 $('startBtn').onclick = async () => {
   const val = $('nameInput').value.trim();
   if(!val){ $('nameInput').focus(); return; }
@@ -440,14 +452,22 @@ $('startBtn').onclick = async () => {
   state.name = val;
   buildPosterThumbs();
   showScreen('screen-howto');
-  speakInstructions();
+  if(howtoVideoURL){
+    $('howtoVideo').play().catch(()=>{});
+  }else{
+    speakInstructions();
+  }
 };
 $('howtoStartBtn').onclick = () => {
   window.speechSynthesis && window.speechSynthesis.cancel();
+  if(howtoVideoURL){ $('howtoVideo').pause(); }
   renderMap(true);
   showScreen('screen-map');
 };
-$('replayNarration').onclick = () => speakInstructions();
+$('replayNarration').onclick = () => {
+  if(howtoVideoURL){ $('howtoVideo').currentTime = 0; $('howtoVideo').play().catch(()=>{}); }
+  else{ speakInstructions(); }
+};
 
 function buildPosterThumbs(){
   const grid = $('posterThumbGrid');
@@ -461,8 +481,8 @@ function buildPosterThumbs(){
   });
 }
 
-const INSTRUCTIONS_TEXT_AR = 'فيه عشر بوسترات ملوّنة مخفية بأماكن مختلفة بالمدرسة. تمشى بالمدرسة ودوّر عليها بنفسك. لما تلقى بوستر، افتح الكاميرا ووجّهها عليه. شخصية مفاجئة بتطلع فوقه وتنضم لبطاقاتك. اجمع البطاقات العشر واحصل على شهادتك.';
-const INSTRUCTIONS_TEXT_EN = 'There are ten colorful posters hidden around the school. Walk around and look for them yourself. When you find a poster, open the camera and point it at it. A surprise character will appear on it and join your cards. Collect all ten cards to get your certificate.';
+const INSTRUCTIONS_TEXT_AR = 'فيه عشر بوسترات ملوّنة مخفية بأماكن مختلفة بالمدرسة. تمشى بالمدرسة ودوّر عليها بنفسك. لما تلقى بوستر، افتح الكاميرا ووجّهها عليه.';
+const INSTRUCTIONS_TEXT_EN = 'There are ten colorful posters hidden around the school. Walk around and look for them yourself. When you find a poster, open the camera and point it at it.';
 function speakInstructions(){
   try{
     if(!('speechSynthesis' in window)) return;
