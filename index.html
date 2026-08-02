@@ -129,6 +129,8 @@
   .cust-status.ok{color:var(--teal);}
   .empty-note{font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:10px;line-height:1.7;}
   .poster-thumb{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;box-shadow:0 4px 8px rgba(15,60,120,0.15);border:1.5px solid #fff;}
+  .challenge-pill{background:#F6F9FC;border:2px solid #E1E9F1;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12px;color:var(--electric);cursor:pointer;font-family:'Tajawal';}
+  .challenge-pill:active{transform:scale(.95);}
 </style>
 </head>
 <body>
@@ -196,6 +198,22 @@
 
     <div class="map-title display">بطاقاتي</div>
     <div class="map-sub" id="countVal">0 من 10 مكتشفة</div>
+
+    <div id="challengeBox" style="background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:16px;box-shadow:0 8px 20px rgba(15,60,120,0.08);">
+      <div id="challengeStart" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ تبين تحدي بالوقت؟</div>
+        <div style="display:flex;gap:6px;">
+          <button class="challenge-pill" data-min="5">5 د</button>
+          <button class="challenge-pill" data-min="10">10 د</button>
+          <button class="challenge-pill" data-min="15">15 د</button>
+        </div>
+      </div>
+      <div id="challengeActive" style="display:none;align-items:center;justify-content:space-between;">
+        <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ الوقت المتبقي</div>
+        <div class="num" id="challengeTimer" style="font-size:20px;font-weight:800;color:var(--clay,var(--electric));">10:00</div>
+      </div>
+    </div>
+
     <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="card-grid" id="cardGrid"></div>
 
@@ -342,6 +360,8 @@ let characterMedia = {};
 let targetsFileURL = null;
 let mindarThree = null;
 let arAnchors = [];
+let challengeEndAt = null;
+let challengeInterval = null;
 const DWELL_MS = 1600;
 const REVEAL_MS = 3800;
 
@@ -554,10 +574,47 @@ $('certBtnMap').onclick = ()=>{ renderCert(); showScreen('screen-cert'); };
 $('exploreBtn').onclick = ()=>{
   const remaining = CHARACTERS.filter(c=>!state.collected.includes(c.id));
   if(remaining.length === 0){ renderCert(); showScreen('screen-cert'); return; }
+  if(challengeEndAt !== null && Date.now() >= challengeEndAt){
+    alert('⏰ خلص وقت التحدي! شوف كم بطاقة قدرت تجمع.');
+    return;
+  }
   openScanner();
 };
 $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen('screen-map'); };
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
+
+/* ---------- تحدي الوقت ---------- */
+document.querySelectorAll('.challenge-pill').forEach(btn=>{
+  btn.onclick = () => startChallenge(Number(btn.dataset.min));
+});
+function startChallenge(minutes){
+  challengeEndAt = Date.now() + minutes*60*1000;
+  $('challengeStart').style.display = 'none';
+  $('challengeActive').style.display = 'flex';
+  updateChallengeTimer();
+  if(challengeInterval) clearInterval(challengeInterval);
+  challengeInterval = setInterval(updateChallengeTimer, 1000);
+}
+function updateChallengeTimer(){
+  if(challengeEndAt === null) return;
+  const remainMs = challengeEndAt - Date.now();
+  if(remainMs <= 0){
+    $('challengeTimer').textContent = '00:00';
+    clearInterval(challengeInterval);
+    challengeInterval = null;
+    endChallenge();
+    return;
+  }
+  const totalSec = Math.ceil(remainMs/1000);
+  const mm = String(Math.floor(totalSec/60)).padStart(2,'0');
+  const ss = String(totalSec%60).padStart(2,'0');
+  $('challengeTimer').textContent = mm+':'+ss;
+}
+function endChallenge(){
+  sfxWin();
+  const box = $('challengeActive');
+  box.innerHTML = `<div style="font-size:12.5px;font-weight:800;color:var(--pink);">⏰ خلص الوقت! جمعت ${state.collected.length} من ${CHARACTERS.length} بطاقات</div>`;
+}
 
 /* ---------- اتجاه الجهاز ---------- */
 /* ---------- الماسح: تعرّف حقيقي على البوسترات عبر MindAR ---------- */
