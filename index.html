@@ -29,7 +29,8 @@
     font-family:'Tajawal',sans-serif;color:var(--ink);min-height:100vh;
   }
   #app{max-width:460px;width:100%;margin:0 auto;position:relative;z-index:1;padding:22px 18px 44px;max-height:100vh;overflow-y:auto;}
-  #bgScene{position:fixed;inset:0;z-index:0;overflow:hidden;background-image:url('av.png');background-size:cover;background-position:center 35%;background-repeat:no-repeat;background-color:#DCEAF7;}
+  #bgScene{position:fixed;inset:0;z-index:0;overflow:hidden;background-color:#3FBFA6;}
+  #bgScene img{width:100%;height:auto;display:block;position:absolute;top:0;left:0;}
   body{display:flex;align-items:center;justify-content:center;}
   .display{font-family:'Baloo Bhaijaan 2';}
   .num{font-family:'JetBrains Mono';}
@@ -135,7 +136,7 @@
 </style>
 </head>
 <body>
-<div id="bgScene"></div>
+<div id="bgScene"><img src="av.png" alt=""></div>
 <div id="app">
 
   <!-- LOGIN -->
