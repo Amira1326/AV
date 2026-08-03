@@ -89,6 +89,12 @@
   .progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg, var(--electric), var(--teal));transition:width .6s cubic-bezier(.2,.8,.3,1);}
 
   .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (min-width:700px){
+    #app{max-width:860px;}
+    .card-grid{grid-template-columns:repeat(5,1fr);}
+    #screen-login .login-card, #screen-howto .login-card{max-width:420px;margin-left:auto;margin-right:auto;}
+    #screen-login > .link-quiet{margin-left:auto;margin-right:auto;}
+  }
   .char-card{border-radius:18px;padding:16px 10px 13px;text-align:center;position:relative;overflow:hidden;background:#fff;}
   .char-card.locked{border:2px dashed #D3DEEA;}
   .char-card.locked .emo{filter:grayscale(1) brightness(1.15);opacity:.3;}
