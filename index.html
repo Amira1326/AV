@@ -187,7 +187,7 @@
         <input type="file" accept="video/*" id="howtoVideoInput" style="font-size:11px;">
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
+      <div id="howtoStepsWrap" style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:28px;">🖼️</div>
           <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);" id="txt_step1">فيه <b style="color:var(--ink);">10 بوسترات</b> ملوّنة مخفية بأماكن مختلفة بالمدرسة</div>
@@ -424,18 +424,18 @@ const I18N = {
     nameLabel:'Explorer name',
     namePlaceholder:'Type your name...',
     startBtn:'Start the adventure',
-    toCustomize:'🎬 Customize characters with real video (for teacher)',
+    toCustomize:'🎬 Customise characters with real video (for teacher)',
     howtoTitle:'How to play?',
     replayNarration:'🔊 Listen again',
-    videoPrompt:'🎥 Have a recorded explanation video? Upload it here to show students instead of text',
-    step1_html:'There are <b style="color:var(--ink);">10 colorful posters</b> hidden around the school',
+    videoPrompt:'🎥 Have a recorded explanation video? Upload it here to show pupils instead of text',
+    step1_html:'There are <b style="color:var(--ink);">10 colourful posters</b> hidden around the school',
     step2:'Walk around the school and look for them yourself',
     step3:'When you find a poster, open the camera and point it at it',
     howtoStartBtn:"Got it, let's start! 🚀",
     brandSub:'My Cards',
     mapTitle:'My Cards',
     countVal:(n,total)=> n+' of '+total+' discovered',
-    challengeAsk:'⏱️ Want a timed challenge?',
+    challengeAsk:'⏱️ Fancy a timed challenge?',
     minSuffix:'(minutes)',
     challengeRemaining:'⏱️ Time remaining',
     exploreBtn:'📷 Open camera and explore',
@@ -453,7 +453,7 @@ const I18N = {
     custBody:'Upload for each character either a <b>transparent PNG image</b> (shown with a rotating pseudo-3D effect) or a <b>clean green-screen video</b> (background removed automatically). If nothing is uploaded, its emoji is shown as a fallback.',
     targetsLabel:'🖼️ Poster recognition file (targets.mind)',
     targetsStatusDefault:'Not uploaded yet — required before opening the camera',
-    dateLocale:'en-US',
+    dateLocale:'en-GB',
   }
 };
 
@@ -639,7 +639,8 @@ $('howtoVideoInput').addEventListener('change', (e)=>{
   howtoVideoURL = URL.createObjectURL(file);
   $('howtoVideo').src = howtoVideoURL;
   $('howtoVideoWrap').style.display = 'block';
-  $('howtoVideoUploadWrap').innerHTML = '<div style="font-size:11.5px;font-weight:800;color:var(--teal);">✅ '+file.name+' — يظهر للطلاب الآن</div>';
+  $('howtoVideoUploadWrap').style.display = 'none';
+  $('howtoStepsWrap').style.display = 'none';
 });
 
 $('startBtn').onclick = async () => {
@@ -798,7 +799,7 @@ function endChallenge(){
 /* ---------- الماسح: تعرّف حقيقي على البوسترات عبر MindAR ---------- */
 async function openScanner(){
   if(!targetsFileURL){
-    alert(currentLang==='ar' ? 'لازم أول ترفع ملف targets.mind من "تخصيص الشخصيات" قبل فتح الكاميرا.' : 'You must first upload a targets.mind file from "Customize characters" before opening the camera.');
+    alert(currentLang==='ar' ? 'لازم أول ترفع ملف targets.mind من "تخصيص الشخصيات" قبل فتح الكاميرا.' : 'You must first upload a targets.mind file from "Customise characters" before opening the camera.');
     buildCustomizeScreen();
     showScreen('screen-customize');
     return;
