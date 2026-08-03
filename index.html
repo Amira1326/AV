@@ -213,7 +213,7 @@
         <div class="brand-badge">🧭</div>
         <div>
           <div class="brand-title" id="hiName">أهلاً يا مستكشف</div>
-          <div class="brand-sub" id="txt_brandSub">بطاقاتي</div>
+          <div class="brand-sub" id="txt_brandSub">مستكشف نشِط</div>
         </div>
       </div>
       <div class="score-chip num" id="scoreChip">⚡ <span id="scoreVal">0</span></div>
@@ -224,16 +224,12 @@
 
     <div id="challengeBox" style="background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:16px;box-shadow:0 8px 20px rgba(15,60,120,0.08);">
       <div id="challengeStart" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <div id="txt_challengeAsk" style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ تبين تحدي بالوقت؟ <span id="txt_minSuffix" style="opacity:.6;font-weight:600;">(دقيقة)</span></div>
-        <div style="display:flex;gap:6px;">
-          <button class="challenge-pill" data-min="5">5</button>
-          <button class="challenge-pill" data-min="10">10</button>
-          <button class="challenge-pill" data-min="15">15</button>
-        </div>
+        <div id="txt_challengeAsk" style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ تحدي 5 دقائق</div>
+        <button class="challenge-pill" id="startChallengeBtn" style="padding:8px 16px;">ابدأ ⚡</button>
       </div>
       <div id="challengeActive" style="display:none;align-items:center;justify-content:space-between;">
         <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);" id="txt_challengeRemaining">⏱️ الوقت المتبقي</div>
-        <div class="num" id="challengeTimer" style="font-size:20px;font-weight:800;color:var(--clay,var(--electric));">10:00</div>
+        <div class="num" id="challengeTimer" style="font-size:20px;font-weight:800;color:var(--clay,var(--electric));">05:00</div>
       </div>
     </div>
 
@@ -324,6 +320,11 @@ const POSTER_THUMBS = {
   '10': 'data:image/jpeg;base64,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',
 };
 </script>
+<div class="reveal-layer" id="readyLayer">
+  <div class="reveal-stamp" id="readyNum" style="background:rgba(255,255,255,0.95);border:5px solid var(--electric);border-radius:50%;font-family:'JetBrains Mono';font-weight:800;color:var(--electric);font-size:90px;">3</div>
+  <div class="reveal-title display" id="txt_getReady">استعد!</div>
+</div>
+
 <script>
 const $ = id => document.getElementById(id);
 function showScreen(id){
@@ -394,11 +395,11 @@ const I18N = {
     step2:'تمشى بالمدرسة وتدوّر عليها بنفسك',
     step3:'لما تلقى بوستر، افتح الكاميرا ووجّهها عليه',
     howtoStartBtn:'فهمت، يلا نبدأ! 🚀',
-    brandSub:'بطاقاتي',
+    brandSub:'مستكشف نشِط',
     mapTitle:'بطاقاتي',
     countVal:(n,total)=> n+' من '+total+' مكتشفة',
-    challengeAsk:'⏱️ تبين تحدي بالوقت؟',
-    minSuffix:'(دقيقة)',
+    challengeAsk:'⏱️ تحدي 5 دقائق',
+    startChallengeBtn:'ابدأ ⚡',
     challengeRemaining:'⏱️ الوقت المتبقي',
     exploreBtn:'📷 افتح الكاميرا واستكشف',
     certBtnMap:'🏅 استلم شهادتي ووسامي',
@@ -435,8 +436,8 @@ const I18N = {
     brandSub:'My Cards',
     mapTitle:'My Cards',
     countVal:(n,total)=> n+' of '+total+' discovered',
-    challengeAsk:'⏱️ Fancy a timed challenge?',
-    minSuffix:'(minutes)',
+    challengeAsk:'⏱️ 5-minute challenge',
+    startChallengeBtn:'Start ⚡',
     challengeRemaining:'⏱️ Time remaining',
     exploreBtn:'📷 Open camera and explore',
     certBtnMap:'🏅 Get my certificate and badge',
@@ -483,7 +484,8 @@ function applyLanguage(){
   $('txt_brandSub').textContent = d.brandSub;
   $('txt_mapTitle').textContent = d.mapTitle;
   $('countVal').textContent = d.countVal(state.collected ? state.collected.length : 0, CHARACTERS.length);
-  $('txt_minSuffix').textContent = d.minSuffix;
+  $('txt_challengeAsk').textContent = d.challengeAsk;
+  $('startChallengeBtn').textContent = d.startChallengeBtn;
   $('exploreBtn').textContent = d.exploreBtn;
   $('certBtnMap').textContent = d.certBtnMap;
   $('switchUser').textContent = d.switchUser;
@@ -762,10 +764,32 @@ $('exploreBtn').onclick = ()=>{
 $('backFromScan').onclick = (e)=>{ e.preventDefault(); stopScanner(); showScreen('screen-map'); };
 $('backFromCert').onclick = (e)=>{ e.preventDefault(); showScreen('screen-map'); };
 
-/* ---------- تحدي الوقت ---------- */
-document.querySelectorAll('.challenge-pill').forEach(btn=>{
-  btn.onclick = () => startChallenge(Number(btn.dataset.min));
-});
+/* ---------- تحدي الوقت: عد استعداد ثم 5 دقائق ثابتة ---------- */
+$('startChallengeBtn').onclick = () => startReadyCountdown(5);
+
+function startReadyCountdown(minutes){
+  $('challengeStart').querySelector('button').disabled = true;
+  let n = 3;
+  $('readyNum').textContent = n;
+  $('readyLayer').classList.add('show');
+  tone(500, 0.15, 'sine', 0.14);
+  const iv = setInterval(()=>{
+    n -= 1;
+    if(n > 0){
+      $('readyNum').textContent = n;
+      tone(500, 0.15, 'sine', 0.14);
+    }else{
+      clearInterval(iv);
+      $('readyNum').textContent = currentLang==='ar' ? 'يلا!' : 'GO!';
+      tone(880, 0.3, 'sine', 0.18);
+      setTimeout(()=>{
+        $('readyLayer').classList.remove('show');
+        $('challengeStart').querySelector('button').disabled = false;
+        startChallenge(minutes);
+      }, 550);
+    }
+  }, 800);
+}
 function startChallenge(minutes){
   challengeEndAt = Date.now() + minutes*60*1000;
   $('challengeStart').style.display = 'none';
@@ -792,7 +816,10 @@ function updateChallengeTimer(){
 function endChallenge(){
   sfxWin();
   const box = $('challengeActive');
-  box.innerHTML = `<div style="font-size:12.5px;font-weight:800;color:var(--pink);">⏰ خلص الوقت! جمعت ${state.collected.length} من ${CHARACTERS.length} بطاقات</div>`;
+  const msg = currentLang==='ar'
+    ? `⏰ خلص الوقت! جمعت ${state.collected.length} من ${CHARACTERS.length} بطاقات`
+    : `⏰ Time's up! You collected ${state.collected.length} of ${CHARACTERS.length} cards`;
+  box.innerHTML = `<div style="font-size:12.5px;font-weight:800;color:var(--pink);">${msg}</div>`;
 }
 
 /* ---------- اتجاه الجهاز ---------- */
