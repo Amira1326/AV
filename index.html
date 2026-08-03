@@ -30,7 +30,8 @@
   }
   #app{max-width:460px;width:100%;margin:0 auto;position:relative;z-index:1;padding:22px 18px 44px;max-height:100vh;overflow-y:auto;}
   #bgScene{position:fixed;inset:0;z-index:0;overflow:hidden;background-color:#3FBFA6;}
-  #bgScene img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;}
+  #bgScene picture, #bgScene img{width:100%;height:100%;display:block;}
+  #bgScene img{object-fit:cover;object-position:center center;}
   body{display:flex;align-items:center;justify-content:center;}
   .display{font-family:'Baloo Bhaijaan 2';}
   .num{font-family:'JetBrains Mono';}
@@ -136,7 +137,12 @@
 </style>
 </head>
 <body>
-<div id="bgScene"><img src="av.png" alt=""></div>
+<div id="bgScene">
+  <picture>
+    <source media="(max-width: 600px)" srcset="av-mobile.png">
+    <img src="av-desktop.png" alt="">
+  </picture>
+</div>
 <div id="app">
 
   <!-- LOGIN -->
