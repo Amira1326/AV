@@ -51,10 +51,10 @@
 
   /* ---- تسجيل الدخول ---- */
   .login-card{
-    background:rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.55);
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     border-radius:28px;padding:38px 26px 32px;text-align:center;position:relative;overflow:hidden;
-    border:1.5px solid rgba(255,255,255,0.4);
+    border:1.5px solid rgba(255,255,255,0.6);
   }
   .login-card::before{
     content:'';position:absolute;inset:-1.5px;border-radius:28px;padding:1.5px;z-index:-1;
@@ -64,13 +64,14 @@
     opacity:.6;
   }
   .login-card::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.04;background-image:linear-gradient(#fff 1px, transparent 1px),linear-gradient(90deg, #fff 1px, transparent 1px);background-size:24px 24px;}
-  .badge-icon{width:76px;height:76px;border-radius:22px;margin:0 auto 18px;background:linear-gradient(135deg, var(--electric), var(--violet) 60%, var(--pink));display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 0 0 6px rgba(255,255,255,0.12), 0 14px 34px rgba(47,111,237,0.4);position:relative;animation:float 4s ease-in-out infinite;}
+  .badge-icon{width:76px;height:76px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;position:relative;animation:float 4s ease-in-out infinite;}
+  .badge-icon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.25));}
   @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
-  .login-card h1{font-size:27px;margin:0 0 6px;position:relative;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.45);}
-  .login-card p{font-size:12.5px;color:rgba(255,255,255,0.85);margin:0 0 24px;font-weight:600;position:relative;line-height:1.6;text-shadow:0 1px 6px rgba(0,0,0,0.35);}
-  label.field-label{display:block;font-size:11.5px;font-weight:800;color:rgba(255,255,255,0.75);margin-bottom:8px;position:relative;text-shadow:0 1px 6px rgba(0,0,0,0.35);}
-  input[type=text]{width:100%;background:rgba(0,0,0,0.2);border:2px solid rgba(255,255,255,0.35);border-radius:13px;padding:15px 16px;color:#fff;font-family:'Tajawal';font-size:15.5px;font-weight:700;outline:none;position:relative;}
-  input[type=text]::placeholder{color:rgba(255,255,255,0.55);}
+  .login-card h1{font-size:27px;margin:0 0 6px;position:relative;color:var(--ink);}
+  .login-card p{font-size:12.5px;color:var(--ink-soft);margin:0 0 24px;font-weight:600;position:relative;line-height:1.6;}
+  label.field-label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;position:relative;}
+  input[type=text]{width:100%;background:rgba(255,255,255,0.5);border:2px solid rgba(14,32,54,0.15);border-radius:13px;padding:15px 16px;color:var(--ink);font-family:'Tajawal';font-size:15.5px;font-weight:700;outline:none;position:relative;}
+  input[type=text]::placeholder{color:rgba(14,32,54,0.4);}
   input[type=text]:focus{border-color:var(--electric);}
 
 
@@ -161,10 +162,11 @@
   <!-- LOGIN -->
   <section class="screen active" id="screen-login">
     <div class="login-card">
-      <div class="badge-icon">🧭</div>
-      <h1 class="display">مستكشفو المعرفة</h1>
-      <p>اجمع بطاقات الاستكشاف العشر داخل المدرسة</p>
-      <label class="field-label">اسم المستكشف</label>
+      <button id="langToggle" style="position:absolute;top:14px;left:14px;z-index:5;background:rgba(255,255,255,0.5);border:1.5px solid rgba(14,32,54,0.15);border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:800;color:var(--ink);cursor:pointer;">🌐 English</button>
+      <div class="badge-icon"><img src="logo.png" alt="شعار"></div>
+      <h1 class="display" id="txt_title">مستكشفو المعرفة</h1>
+      <p id="txt_tagline">اجمع بطاقات الاستكشاف العشر داخل المدرسة</p>
+      <label class="field-label" id="txt_nameLabel">اسم المستكشف</label>
       <input type="text" id="nameInput" placeholder="اكتب اسمك هنا..." maxlength="30">
       <button class="btn btn-electric mt14" id="startBtn">ابدأ المغامرة</button>
     </div>
@@ -174,29 +176,29 @@
   <!-- HOW TO PLAY -->
   <section class="screen" id="screen-howto">
     <div class="login-card" style="text-align:right;">
-      <h1 class="display" style="text-align:center;">كيف تلعب؟</h1>
+      <h1 class="display" style="text-align:center;" id="txt_howtoTitle">كيف تلعب؟</h1>
       <button class="link-quiet" id="replayNarration" style="background:none;border:none;cursor:pointer;color:var(--electric);font-size:12.5px;">🔊 اسمع الشرح مرة ثانية</button>
 
       <div id="howtoVideoWrap" style="display:none;margin-top:14px;">
         <video id="howtoVideo" controls playsinline style="width:100%;border-radius:12px;background:#000;"></video>
       </div>
-      <div id="howtoVideoUploadWrap" style="margin-top:14px;background:rgba(0,0,0,0.25);border:2px dashed rgba(255,255,255,0.3);border-radius:12px;padding:12px;text-align:center;">
-        <div style="font-size:12px;font-weight:800;color:rgba(255,255,255,0.85);margin-bottom:8px;">🎥 عندك فيديو شرح مسجّل بصوتك؟ ارفعه هنا وبيظهر للطلاب بدل النص</div>
+      <div id="howtoVideoUploadWrap" style="margin-top:14px;background:rgba(255,255,255,0.4);border:2px dashed rgba(14,32,54,0.2);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-size:12px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;" id="txt_videoPrompt">🎥 عندك فيديو شرح مسجّل بصوتك؟ ارفعه هنا وبيظهر للطلاب بدل النص</div>
         <input type="file" accept="video/*" id="howtoVideoInput" style="font-size:11px;">
       </div>
 
       <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:28px;">🖼️</div>
-          <div style="font-size:13.5px;font-weight:700;color:rgba(255,255,255,0.85);">فيه <b style="color:#fff;">10 بوسترات</b> ملوّنة مخفية بأماكن مختلفة بالمدرسة</div>
+          <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);" id="txt_step1">فيه <b style="color:var(--ink);">10 بوسترات</b> ملوّنة مخفية بأماكن مختلفة بالمدرسة</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:28px;">🚶</div>
-          <div style="font-size:13.5px;font-weight:700;color:rgba(255,255,255,0.85);">تمشى بالمدرسة وتدوّر عليها بنفسك</div>
+          <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);" id="txt_step2">تمشى بالمدرسة وتدوّر عليها بنفسك</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:28px;">📷</div>
-          <div style="font-size:13.5px;font-weight:700;color:rgba(255,255,255,0.85);">لما تلقى بوستر، افتح الكاميرا ووجّهها عليه</div>
+          <div style="font-size:13.5px;font-weight:700;color:var(--ink-soft);" id="txt_step3">لما تلقى بوستر، افتح الكاميرا ووجّهها عليه</div>
         </div>
         <div id="posterThumbGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;"></div>
       </div>
@@ -211,26 +213,26 @@
         <div class="brand-badge">🧭</div>
         <div>
           <div class="brand-title" id="hiName">أهلاً يا مستكشف</div>
-          <div class="brand-sub">بطاقاتي</div>
+          <div class="brand-sub" id="txt_brandSub">بطاقاتي</div>
         </div>
       </div>
       <div class="score-chip num" id="scoreChip">⚡ <span id="scoreVal">0</span></div>
     </div>
 
-    <div class="map-title display">بطاقاتي</div>
+    <div class="map-title display" id="txt_mapTitle">بطاقاتي</div>
     <div class="map-sub" id="countVal">0 من 10 مكتشفة</div>
 
     <div id="challengeBox" style="background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:16px;box-shadow:0 8px 20px rgba(15,60,120,0.08);">
       <div id="challengeStart" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ تبين تحدي بالوقت؟</div>
+        <div id="txt_challengeAsk" style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ تبين تحدي بالوقت؟ <span id="txt_minSuffix" style="opacity:.6;font-weight:600;">(دقيقة)</span></div>
         <div style="display:flex;gap:6px;">
-          <button class="challenge-pill" data-min="5">5 د</button>
-          <button class="challenge-pill" data-min="10">10 د</button>
-          <button class="challenge-pill" data-min="15">15 د</button>
+          <button class="challenge-pill" data-min="5">5</button>
+          <button class="challenge-pill" data-min="10">10</button>
+          <button class="challenge-pill" data-min="15">15</button>
         </div>
       </div>
       <div id="challengeActive" style="display:none;align-items:center;justify-content:space-between;">
-        <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ الوقت المتبقي</div>
+        <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);" id="txt_challengeRemaining">⏱️ الوقت المتبقي</div>
         <div class="num" id="challengeTimer" style="font-size:20px;font-weight:800;color:var(--clay,var(--electric));">10:00</div>
       </div>
     </div>
@@ -263,10 +265,10 @@
   <section class="screen" id="screen-cert">
     <a class="back-link" id="backFromCert">→ رجوع لبطاقاتي</a>
     <div class="cert" id="certBox">
-      <div class="cert-eyebrow">وسام مستكشف المعرفة</div>
-      <div class="cert-title display">شهادة إنجاز</div>
+      <div class="cert-eyebrow" id="txt_certEyebrow">وسام مستكشف المعرفة</div>
+      <div class="cert-title display" id="txt_certTitle">شهادة إنجاز</div>
       <div class="cert-name" id="certName">اسم الطالب</div>
-      <div class="cert-body">أكمل رحلة استكشاف المعرفة داخل المدرسة، وجمع جميع البطاقات العشر بنجاح وتميّز.</div>
+      <div class="cert-body" id="txt_certBody">أكمل رحلة استكشاف المعرفة داخل المدرسة، وجمع جميع البطاقات العشر بنجاح وتميّز.</div>
       <div class="cert-emojis">🐰🦁🤖⭐🍎📚🔑💎🦉🚀</div>
       <div class="cert-date" id="certDate">التاريخ</div>
     </div>
@@ -276,18 +278,18 @@
   <!-- CUSTOMIZE -->
   <section class="screen" id="screen-customize">
     <a class="back-link" id="backFromCustomize">→ رجوع</a>
-    <h2 class="display" style="font-size:21px;margin:0 0 4px;">فيديو أو صورة حقيقية لكل شخصية</h2>
-    <p style="color:var(--ink-soft);font-size:12.5px;line-height:1.9;margin:0 0 14px;">
+    <h2 class="display" style="font-size:21px;margin:0 0 4px;" id="txt_custTitle">فيديو أو صورة حقيقية لكل شخصية</h2>
+    <p style="color:var(--ink-soft);font-size:12.5px;line-height:1.9;margin:0 0 14px;" id="txt_custBody">
       ارفع لكل شخصية إما <b>صورة PNG بخلفية شفافة</b> (تظهر بتأثير شبه-3D يدور ويتمايل) أو <b>فيديو بخلفية خضراء صافية</b> (يشيل الموقع الخلفية تلقائيًا). إذا ما رفعت شي، بتظهر برمزها التعبيري كخيار احتياطي.
     </p>
     <div class="cust-card" style="border-color:var(--electric);">
       <div class="cust-info">
-        <div class="cust-name">🖼️ ملف التعرف على البوسترات (targets.mind)</div>
+        <div class="cust-name" id="txt_targetsLabel">🖼️ ملف التعرف على البوسترات (targets.mind)</div>
         <div class="cust-status" id="targetsStatus">لم يتم رفعه بعد — لازم قبل ما تفتح الكاميرا</div>
-        <div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;line-height:1.7;">
-          حمّل البوسترات العشرة، ارفعها بنفس الترتيب (01→10) على
-          <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank" rel="noopener">أداة MindAR المجانية</a>،
-          ونزّل ملف targets.mind وارفعه هنا.
+        <div style="font-size:10.5px;color:var(--ink-soft);margin-top:6px;line-height:1.7;" id="txt_targetsHelp">
+          <span id="txt_targetsHelpPre">حمّل البوسترات العشرة، ارفعها بنفس الترتيب (01→10) على</span>
+          <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" target="_blank" rel="noopener" id="txt_targetsHelpLink">أداة MindAR المجانية</a>،
+          <span id="txt_targetsHelpPost">ونزّل ملف targets.mind وارفعه هنا.</span>
         </div>
       </div>
       <input type="file" accept=".mind" id="targetsFileInput" style="width:100px;font-size:10.5px;">
@@ -361,18 +363,159 @@ function animateNumber(el, from, to, duration=650){
 }
 
 const CHARACTERS = [
-  {id:'KE-01', name:'أرنب الحروف',    emoji:'🐰', pts:10, hint:'قرب مكتبة المدرسة'},
-  {id:'KE-02', name:'أسد الشجاعة',    emoji:'🦁', pts:10, hint:'عند بوابة الملعب'},
-  {id:'KE-03', name:'روبوت STEM',     emoji:'🤖', pts:15, hint:'داخل معمل العلوم'},
-  {id:'KE-04', name:'نجمة الإبداع',   emoji:'⭐', pts:15, hint:'قاعة الفنون'},
-  {id:'KE-05', name:'تفاحة المعرفة',  emoji:'🍎', pts:15, hint:'الكافيتيريا'},
-  {id:'KE-06', name:'كتاب الأسرار',   emoji:'📚', pts:20, hint:'ركن القراءة'},
-  {id:'KE-07', name:'مفتاح النجاح',   emoji:'🔑', pts:20, hint:'مكتب الإدارة'},
-  {id:'KE-08', name:'الجوهرة الذهبية',emoji:'💎', pts:30, hint:'مسرح المدرسة'},
-  {id:'KE-09', name:'بومة الحكمة',    emoji:'🦉', pts:20, hint:'قاعة الاجتماعات'},
-  {id:'KE-10', name:'صاروخ الطموح',   emoji:'🚀', pts:25, hint:'الساحة الخارجية'},
+  {id:'KE-01', name:'أرنب الحروف',    nameEn:'Letters Rabbit',   emoji:'🐰', pts:10, hint:'قرب مكتبة المدرسة',   hintEn:'Near the school library'},
+  {id:'KE-02', name:'أسد الشجاعة',    nameEn:'Courage Lion',     emoji:'🦁', pts:10, hint:'عند بوابة الملعب',     hintEn:'At the playground gate'},
+  {id:'KE-03', name:'روبوت STEM',     nameEn:'STEM Robot',       emoji:'🤖', pts:15, hint:'داخل معمل العلوم',     hintEn:'Inside the science lab'},
+  {id:'KE-04', name:'نجمة الإبداع',   nameEn:'Creativity Star',  emoji:'⭐', pts:15, hint:'قاعة الفنون',          hintEn:'The art hall'},
+  {id:'KE-05', name:'تفاحة المعرفة',  nameEn:'Knowledge Apple',  emoji:'🍎', pts:15, hint:'الكافيتيريا',           hintEn:'The cafeteria'},
+  {id:'KE-06', name:'كتاب الأسرار',   nameEn:'Secrets Book',     emoji:'📚', pts:20, hint:'ركن القراءة',          hintEn:'The reading corner'},
+  {id:'KE-07', name:'مفتاح النجاح',   nameEn:'Key of Success',   emoji:'🔑', pts:20, hint:'مكتب الإدارة',          hintEn:'The admin office'},
+  {id:'KE-08', name:'الجوهرة الذهبية',nameEn:'Golden Gem',       emoji:'💎', pts:30, hint:'مسرح المدرسة',          hintEn:'The school theater'},
+  {id:'KE-09', name:'بومة الحكمة',    nameEn:'Wisdom Owl',       emoji:'🦉', pts:20, hint:'قاعة الاجتماعات',       hintEn:'The meeting hall'},
+  {id:'KE-10', name:'صاروخ الطموح',   nameEn:'Ambition Rocket',  emoji:'🚀', pts:25, hint:'الساحة الخارجية',       hintEn:'The outdoor yard'},
 ];
 const TOTAL_PTS = CHARACTERS.reduce((s,c)=>s+c.pts,0);
+
+/* ---------- نظام اللغتين (عربي/إنجليزي) ---------- */
+let currentLang = 'ar';
+const I18N = {
+  ar: {
+    langToggle:'🌐 English',
+    title:'مستكشفو المعرفة',
+    tagline:'اجمع بطاقات الاستكشاف العشر داخل المدرسة',
+    nameLabel:'اسم المستكشف',
+    namePlaceholder:'اكتب اسمك هنا...',
+    startBtn:'ابدأ المغامرة',
+    toCustomize:'🎬 تخصيص الشخصيات بفيديو حقيقي (للمعلّم)',
+    howtoTitle:'كيف تلعب؟',
+    replayNarration:'🔊 اسمع الشرح مرة ثانية',
+    videoPrompt:'🎥 عندك فيديو شرح مسجّل بصوتك؟ ارفعه هنا وبيظهر للطلاب بدل النص',
+    step1_html:'فيه <b style="color:var(--ink);">10 بوسترات</b> ملوّنة مخفية بأماكن مختلفة بالمدرسة',
+    step2:'تمشى بالمدرسة وتدوّر عليها بنفسك',
+    step3:'لما تلقى بوستر، افتح الكاميرا ووجّهها عليه',
+    howtoStartBtn:'فهمت، يلا نبدأ! 🚀',
+    brandSub:'بطاقاتي',
+    mapTitle:'بطاقاتي',
+    countVal:(n,total)=> n+' من '+total+' مكتشفة',
+    challengeAsk:'⏱️ تبين تحدي بالوقت؟',
+    minSuffix:'(دقيقة)',
+    challengeRemaining:'⏱️ الوقت المتبقي',
+    exploreBtn:'📷 افتح الكاميرا واستكشف',
+    certBtnMap:'🏅 استلم شهادتي ووسامي',
+    switchUser:'تبديل المستخدم',
+    backToCards:'→ رجوع لبطاقاتي',
+    targetSearching:'شخصية مجهولة تنتظرك بمكان ما...',
+    targetHintDefault:'لُف بالكاميرا حواليك ببطء وشوف وين تحس بدفء أكثر',
+    scanStarting:'جاري تشغيل الكاميرا...',
+    certEyebrow:'وسام مستكشف المعرفة',
+    certTitle:'شهادة إنجاز',
+    certBody:'أكمل رحلة استكشاف المعرفة داخل المدرسة، وجمع جميع البطاقات العشر بنجاح وتميّز.',
+    printCertBtn:'🖨️ طباعة / حفظ الشهادة',
+    custTitle:'فيديو أو صورة حقيقية لكل شخصية',
+    custBody:'ارفع لكل شخصية إما <b>صورة PNG بخلفية شفافة</b> (تظهر بتأثير شبه-3D يدور ويتمايل) أو <b>فيديو بخلفية خضراء صافية</b> (يشيل الموقع الخلفية تلقائيًا). إذا ما رفعت شي، بتظهر برمزها التعبيري كخيار احتياطي.',
+    targetsLabel:'🖼️ ملف التعرف على البوسترات (targets.mind)',
+    targetsStatusDefault:'لم يتم رفعه بعد — لازم قبل ما تفتح الكاميرا',
+    dateLocale:'ar-SA',
+  },
+  en: {
+    langToggle:'🌐 عربي',
+    title:'Knowledge Explorers',
+    tagline:'Collect all ten exploration cards around the school',
+    nameLabel:'Explorer name',
+    namePlaceholder:'Type your name...',
+    startBtn:'Start the adventure',
+    toCustomize:'🎬 Customize characters with real video (for teacher)',
+    howtoTitle:'How to play?',
+    replayNarration:'🔊 Listen again',
+    videoPrompt:'🎥 Have a recorded explanation video? Upload it here to show students instead of text',
+    step1_html:'There are <b style="color:var(--ink);">10 colorful posters</b> hidden around the school',
+    step2:'Walk around the school and look for them yourself',
+    step3:'When you find a poster, open the camera and point it at it',
+    howtoStartBtn:"Got it, let's start! 🚀",
+    brandSub:'My Cards',
+    mapTitle:'My Cards',
+    countVal:(n,total)=> n+' of '+total+' discovered',
+    challengeAsk:'⏱️ Want a timed challenge?',
+    minSuffix:'(minutes)',
+    challengeRemaining:'⏱️ Time remaining',
+    exploreBtn:'📷 Open camera and explore',
+    certBtnMap:'🏅 Get my certificate and badge',
+    switchUser:'Switch user',
+    backToCards:'→ Back to my cards',
+    targetSearching:'A mystery character is waiting somewhere...',
+    targetHintDefault:'Slowly turn the camera around you and see where it feels warmer',
+    scanStarting:'Starting camera...',
+    certEyebrow:'Knowledge Explorer Badge',
+    certTitle:'Certificate of Achievement',
+    certBody:'Completed the knowledge exploration journey around the school, collecting all ten cards with success and excellence.',
+    printCertBtn:'🖨️ Print / Save certificate',
+    custTitle:'Real video or image for each character',
+    custBody:'Upload for each character either a <b>transparent PNG image</b> (shown with a rotating pseudo-3D effect) or a <b>clean green-screen video</b> (background removed automatically). If nothing is uploaded, its emoji is shown as a fallback.',
+    targetsLabel:'🖼️ Poster recognition file (targets.mind)',
+    targetsStatusDefault:'Not uploaded yet — required before opening the camera',
+    dateLocale:'en-US',
+  }
+};
+
+function t(key){ return I18N[currentLang][key]; }
+
+function applyLanguage(){
+  const d = I18N[currentLang];
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+  $('langToggle').textContent = d.langToggle;
+  $('txt_title').textContent = d.title;
+  $('txt_tagline').textContent = d.tagline;
+  $('txt_nameLabel').textContent = d.nameLabel;
+  $('nameInput').placeholder = d.namePlaceholder;
+  $('startBtn').textContent = d.startBtn;
+  $('toCustomize').textContent = d.toCustomize;
+
+  $('txt_howtoTitle').textContent = d.howtoTitle;
+  $('replayNarration').textContent = d.replayNarration;
+  $('txt_videoPrompt').textContent = d.videoPrompt;
+  $('txt_step1').innerHTML = d.step1_html;
+  $('txt_step2').textContent = d.step2;
+  $('txt_step3').textContent = d.step3;
+  $('howtoStartBtn').textContent = d.howtoStartBtn;
+
+  $('txt_brandSub').textContent = d.brandSub;
+  $('txt_mapTitle').textContent = d.mapTitle;
+  $('countVal').textContent = d.countVal(state.collected ? state.collected.length : 0, CHARACTERS.length);
+  $('txt_minSuffix').textContent = d.minSuffix;
+  $('exploreBtn').textContent = d.exploreBtn;
+  $('certBtnMap').textContent = d.certBtnMap;
+  $('switchUser').textContent = d.switchUser;
+
+  $('backFromScan').textContent = d.backToCards;
+  if(!currentTarget){
+    $('targetName').textContent = d.targetSearching;
+    $('targetHint').textContent = d.targetHintDefault;
+  }
+
+  $('backFromCert').textContent = d.backToCards;
+  $('txt_certEyebrow').textContent = d.certEyebrow;
+  $('txt_certTitle').textContent = d.certTitle;
+  $('txt_certBody').textContent = d.certBody;
+  $('printCertBtn').textContent = d.printCertBtn;
+
+  $('txt_custTitle').textContent = d.custTitle;
+  $('txt_custBody').innerHTML = d.custBody;
+  $('txt_targetsLabel').textContent = d.targetsLabel;
+  if(!targetsFileURL) $('targetsStatus').textContent = d.targetsStatusDefault;
+  $('txt_targetsHelpPre').textContent = currentLang==='ar' ? 'حمّل البوسترات العشرة، ارفعها بنفس الترتيب (01→10) على' : 'Download the ten posters, upload them in the same order (01→10) to the';
+  $('txt_targetsHelpLink').textContent = currentLang==='ar' ? 'أداة MindAR المجانية' : 'free MindAR tool';
+  $('txt_targetsHelpPost').textContent = currentLang==='ar' ? 'ونزّل ملف targets.mind وارفعه هنا.' : 'then download the targets.mind file and upload it here.';
+
+  if(document.querySelector('.screen.active')?.id === 'screen-map') renderMap(false);
+  if(document.getElementById('customizeList')?.dataset.built) refreshCustomizeTexts();
+}
+
+$('langToggle').onclick = () => {
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  applyLanguage();
+};
 
 let state = { name:null, collected:[], points:0 };
 let scanning = false;
@@ -405,15 +548,26 @@ function buildCustomizeScreen(){
   CHARACTERS.forEach(c=>{
     const row = document.createElement('div');
     row.className = 'cust-card';
+    row.dataset.charId = c.id;
     row.innerHTML = `
       <div class="cust-em">${c.emoji}</div>
       <div class="cust-info">
-        <div class="cust-name">${c.name}</div>
-        <div class="cust-status" id="custStatus-${c.id}">بدون فيديو — سيظهر الرمز التعبيري</div>
+        <div class="cust-name" id="custName-${c.id}">${currentLang==='ar'?c.name:c.nameEn}</div>
+        <div class="cust-status" id="custStatus-${c.id}" data-uploaded="0">${currentLang==='ar'?'بدون فيديو — سيظهر الرمز التعبيري':'No video — emoji will be shown instead'}</div>
       </div>
       <input type="file" accept="image/png,image/webp,video/*" id="custFile-${c.id}" style="width:100px;font-size:10.5px;">`;
     list.appendChild(row);
     $(`custFile-${c.id}`).addEventListener('change', (e)=> handleMediaUpload(c.id, e.target.files[0]));
+  });
+}
+function refreshCustomizeTexts(){
+  CHARACTERS.forEach(c=>{
+    const nameEl = document.getElementById(`custName-${c.id}`);
+    if(nameEl) nameEl.textContent = currentLang==='ar' ? c.name : c.nameEn;
+    const statusEl = document.getElementById(`custStatus-${c.id}`);
+    if(statusEl && statusEl.dataset.uploaded === '0'){
+      statusEl.textContent = currentLang==='ar' ? 'بدون فيديو — سيظهر الرمز التعبيري' : 'No video — emoji will be shown instead';
+    }
   });
 }
 function handleMediaUpload(id, file){
@@ -429,6 +583,7 @@ function handleImageUpload(id, file){
     const statusEl = $(`custStatus-${id}`);
     statusEl.textContent = '✅ ' + file.name + ' — تأثير شبه-3D';
     statusEl.classList.add('ok');
+    statusEl.dataset.uploaded = '1';
   };
   img.src = url;
 }
@@ -443,6 +598,7 @@ function handleVideoUpload(id, file){
   const statusEl = $(`custStatus-${id}`);
   statusEl.textContent = '✅ ' + file.name + ' — بدون خلفية';
   statusEl.classList.add('ok');
+  statusEl.dataset.uploaded = '1';
 }
 function chromaKeyFrame(media){
   const { video, keyCanvas, keyCtx } = media;
@@ -557,16 +713,17 @@ $('switchUser').onclick = (e)=>{ e.preventDefault(); showScreen('screen-login');
 
 /* ---------- شاشة البطاقات (عرض فقط، بدون اختيار مباشر) ---------- */
 function renderMap(isFirstRender){
-  $('hiName').textContent = 'أهلاً ' + state.name;
+  $('hiName').textContent = (currentLang==='ar' ? 'أهلاً ' : 'Hi ') + state.name;
   const prevScore = Number($('scoreVal').textContent) || 0;
   animateNumber($('scoreVal'), isFirstRender ? state.points : prevScore, state.points);
-  $('countVal').textContent = state.collected.length + ' من ' + CHARACTERS.length + ' مكتشفة';
+  $('countVal').textContent = t('countVal')(state.collected.length, CHARACTERS.length);
   $('progressFill').style.width = Math.round((state.points/TOTAL_PTS)*100) + '%';
 
   const grid = $('cardGrid');
   grid.innerHTML = '';
   CHARACTERS.forEach((c, idx)=>{
     const done = state.collected.includes(c.id);
+    const displayName = currentLang==='ar' ? c.name : c.nameEn;
     const card = document.createElement('div');
     card.className = 'char-card ' + (done ? 'unlocked' : 'locked');
     if(done){
@@ -575,7 +732,7 @@ function renderMap(isFirstRender){
         <div class="shine"></div>
         <div class="card-inner">
           <span class="emo">${c.emoji}</span>
-          <div class="cname">${c.name}</div>
+          <div class="cname">${displayName}</div>
           <div class="cpts num">+${c.pts}</div>
         </div>`;
     }else{
@@ -641,17 +798,17 @@ function endChallenge(){
 /* ---------- الماسح: تعرّف حقيقي على البوسترات عبر MindAR ---------- */
 async function openScanner(){
   if(!targetsFileURL){
-    alert('لازم أول ترفع ملف targets.mind من "تخصيص الشخصيات" قبل فتح الكاميرا.');
+    alert(currentLang==='ar' ? 'لازم أول ترفع ملف targets.mind من "تخصيص الشخصيات" قبل فتح الكاميرا.' : 'You must first upload a targets.mind file from "Customize characters" before opening the camera.');
     buildCustomizeScreen();
     showScreen('screen-customize');
     return;
   }
   currentTarget = null;
   $('targetEmoji').textContent = '🔍';
-  $('targetName').textContent = 'وجّه الكاميرا على أي بوستر تلقاه بالمدرسة';
-  $('targetHint').textContent = 'قف قدام البوستر مباشرة وثبّت الكاميرا عليه';
+  $('targetName').textContent = t('targetSearching');
+  $('targetHint').textContent = t('targetHintDefault');
   showScreen('screen-scan');
-  $('scanStatus').textContent = 'جاري تشغيل الكاميرا...';
+  $('scanStatus').textContent = t('scanStarting');
   try{
     mindarThree = new MINDAR.IMAGE.MindARThree({
       container: $('arContainer'),
@@ -673,20 +830,20 @@ async function openScanner(){
         a.found = true; a.foundAt = performance.now();
         currentTarget = character;
         $('targetEmoji').textContent = '🔍';
-        $('targetName').textContent = 'لقيتها! ثبّت الكاميرا شوي...';
+        $('targetName').textContent = currentLang==='ar' ? 'لقيتها! ثبّت الكاميرا شوي...' : 'Found it! Hold the camera steady...';
         $('targetHint').textContent = '';
       };
       anchor.onTargetLost = ()=>{
         arAnchors[idx].found = false;
         if(currentTarget && currentTarget.id === character.id) currentTarget = null;
-        $('targetName').textContent = 'وجّه الكاميرا على أي بوستر تلقاه بالمدرسة';
-        $('targetHint').textContent = 'قف قدام البوستر مباشرة وثبّت الكاميرا عليه';
+        $('targetName').textContent = t('targetSearching');
+        $('targetHint').textContent = t('targetHintDefault');
       };
     });
 
     await mindarThree.start();
     scanning = true;
-    $('scanStatus').textContent = 'دوّر بالمدرسة ووجّه الكاميرا على أي بوستر...';
+    $('scanStatus').textContent = currentLang==='ar' ? 'دوّر بالمدرسة ووجّه الكاميرا على أي بوستر...' : 'Walk around the school and point the camera at any poster...';
     renderer.setAnimationLoop(()=>{
       const now = performance.now();
       arAnchors.forEach(a=>{
@@ -784,9 +941,11 @@ function showReveal(character, isNew){
 /* ---------- الشهادة ---------- */
 function renderCert(){
   $('certName').textContent = state.name;
-  $('certDate').textContent = new Date().toLocaleDateString('ar-SA', { year:'numeric', month:'long', day:'numeric' });
+  $('certDate').textContent = new Date().toLocaleDateString(t('dateLocale'), { year:'numeric', month:'long', day:'numeric' });
 }
 $('printCertBtn').onclick = ()=> window.print();
+
+applyLanguage();
 </script>
 </body>
 </html>
