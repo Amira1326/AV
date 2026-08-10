@@ -355,7 +355,7 @@ const POSTER_THUMBS = {
 };
 </script>
 <div class="reveal-layer" id="readyLayer">
-  <div class="reveal-stamp" id="readyNum" style="background:rgba(255,255,255,0.95);border:5px solid var(--electric);border-radius:50%;font-family:'JetBrains Mono';font-weight:800;color:var(--electric);font-size:90px;">3</div>
+  <div id="readyNum" style="width:170px;height:170px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.95);border:6px solid var(--electric);border-radius:50%;font-family:'JetBrains Mono';font-weight:800;color:var(--electric);font-size:64px;box-shadow:0 20px 50px rgba(0,0,0,0.35);">3</div>
   <div class="reveal-title display" id="txt_getReady">استعد!</div>
 </div>
 
@@ -1058,17 +1058,18 @@ function pulseReadyNum(color){
 }
 /* عد استعداد عام (3-2-1-يلا) يشتغل قبل أي جلسة استكشاف بالكاميرا */
 function playReadyCountdown(onDone){
-  const seqAr = ['3','2','1','يلا! 🚀'];
-  const seqEn = ['3','2','1','GO! 🚀'];
-  const speakAr = ['ثلاثة','اثنين','واحد','يلا'];
-  const speakEn = ['three','two','one','go'];
-  const colors = ['#E8497A','#F2A93B','#2F6FED','#0FB8A6'];
+  const seqAr = ['1','2','3','Start! 🚀'];
+  const seqEn = ['1','2','3','Start! 🚀'];
+  const speakAr = ['واحد','اثنين','ثلاثة','Start'];
+  const speakEn = ['one','two','three','Start'];
+  const colors = ['#2F6FED','#F2A93B','#E8497A','#0FB8A6'];
   let i = 0;
   $('readyLayer').classList.add('show');
   function step(){
     const seq = currentLang==='ar' ? seqAr : seqEn;
     const speak = currentLang==='ar' ? speakAr : speakEn;
     $('readyNum').textContent = seq[i];
+    $('readyNum').style.fontSize = (i === 3) ? '30px' : '64px';
     pulseReadyNum(colors[i]);
     speakCount(speak[i]);
     tone(i<3 ? 420+i*80 : 880, i<3?0.15:0.35, 'sine', i<3?0.14:0.2);
