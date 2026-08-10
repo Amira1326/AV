@@ -28,7 +28,7 @@
       var(--bg);
     font-family:'Tajawal',sans-serif;color:var(--ink);min-height:100vh;
   }
-  #app{max-width:460px;width:100%;margin:0 auto;position:relative;z-index:1;padding:22px 18px 44px;max-height:100vh;overflow-y:auto;}
+  #app{max-width:460px;width:100%;margin:0 auto;position:relative;z-index:1;padding:22px 18px 44px;}
   #bgScene{position:fixed;inset:0;z-index:0;overflow:hidden;background-color:#3FBFA6;}
   #bgScene picture, #bgScene img{width:100%;height:100%;display:block;}
   #bgScene img{object-fit:cover;object-position:center center;}
@@ -942,9 +942,13 @@ function renderMap(isFirstRender){
           <div class="cpts num">+${c.pts}</div>
         </div>`;
     }else{
+      const media = characterMedia[c.id];
+      const lockedVisual = (media && media.type === 'image')
+        ? `<img src="${media.img.src}" style="width:64px;height:64px;object-fit:contain;display:block;margin:0 auto 6px;filter:grayscale(1) brightness(1.15);opacity:.55;">`
+        : `<span class="emo">${c.emoji}</span>`;
       card.innerHTML = `
         <span class="lock-ic">🔒</span>
-        <span class="emo">${c.emoji}</span>
+        ${lockedVisual}
         <div class="cname mystery">؟ ؟ ؟</div>
         <div class="cpts num">--</div>`;
     }
