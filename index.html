@@ -367,6 +367,53 @@ const POSTER_THUMBS = {
 
 <script>
 const $ = id => document.getElementById(id);
+
+/* ---------- بديل window.storage: قاعدة بيانات Supabase حقيقية تشتغل من أي جهاز ----------
+   (window.storage الأصلي خاص بمنصة Claude فقط، وما يشتغل لما الملف يُفتح مباشرة) */
+const SUPABASE_URL = 'https://budgoiwwpmdpxuprudrh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1ZGdvaXd3cG1kcHh1cHJ1ZHJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MDY1OTEsImV4cCI6MjEwMTk4MjU5MX0.smSgx5UnK4A5_-Wf8urUnDL0-sVlGTrAt9NhPyS7ABI';
+window.storage = {
+  async get(key, shared){
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/kv_store?key=eq.${encodeURIComponent(key)}&select=key,value`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    if(!res.ok) throw new Error('storage get failed: ' + res.status);
+    const data = await res.json();
+    if(!data.length) throw new Error('key not found');
+    return { key: data[0].key, value: data[0].value, shared: true };
+  },
+  async set(key, value, shared){
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/kv_store`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify({ key, value })
+    });
+    if(!res.ok) return null;
+    return { key, value, shared: true };
+  },
+  async delete(key, shared){
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/kv_store?key=eq.${encodeURIComponent(key)}`, {
+      method: 'DELETE',
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: 'return=representation' }
+    });
+    if(!res.ok) return null;
+    return { key, deleted: true, shared: true };
+  },
+  async list(prefix, shared){
+    const pattern = (prefix || '') + '*';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/kv_store?key=like.${encodeURIComponent(pattern)}&select=key`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    });
+    if(!res.ok) throw new Error('storage list failed: ' + res.status);
+    const data = await res.json();
+    return { keys: data.map(d => d.key), prefix, shared: true };
+  }
+};
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
