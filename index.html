@@ -240,9 +240,8 @@
     <div class="map-sub" id="countVal">0 من 10 مكتشفة</div>
 
     <div id="challengeBox" style="background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:16px;box-shadow:0 8px 20px rgba(15,60,120,0.08);">
-      <div id="challengeStart" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <div id="txt_challengeAsk" style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ تحدي 10 دقائق</div>
-        <button class="challenge-pill" id="startChallengeBtn" style="padding:8px 16px;">ابدأ ⚡</button>
+      <div id="challengeStart" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+        <div id="txt_challengeAsk" style="font-size:12.5px;font-weight:800;color:var(--ink-soft);">⏱️ التحدي 10 دقائق يبدأ تلقائيًا أول ما تفتحين الكاميرا</div>
       </div>
       <div id="challengeActive" style="display:none;align-items:center;justify-content:space-between;">
         <div style="font-size:12.5px;font-weight:800;color:var(--ink-soft);" id="txt_challengeRemaining">⏱️ الوقت المتبقي</div>
@@ -488,8 +487,7 @@ const I18N = {
     brandSub:'مستكشف نشِط',
     mapTitle:'بطاقاتي',
     countVal:(n,total)=> n+' من '+total+' مكتشفة',
-    challengeAsk:'⏱️ تحدي 10 دقائق',
-    startChallengeBtn:'ابدأ ⚡',
+    challengeAsk:'⏱️ التحدي 10 دقائق يبدأ تلقائيًا أول ما تفتحين الكاميرا',
     challengeRemaining:'⏱️ الوقت المتبقي',
     exploreBtn:'📷 افتح الكاميرا واستكشف',
     certBtnMap:'🏅 استلم شهادتي ووسامي',
@@ -533,8 +531,7 @@ const I18N = {
     brandSub:'My Cards',
     mapTitle:'My Cards',
     countVal:(n,total)=> n+' of '+total+' discovered',
-    challengeAsk:'⏱️ 10-minute challenge',
-    startChallengeBtn:'Start ⚡',
+    challengeAsk:'⏱️ The 10-minute challenge starts automatically when you open the camera',
     challengeRemaining:'⏱️ Time remaining',
     exploreBtn:'📷 Open camera and explore',
     certBtnMap:'🏅 Get my certificate and badge',
@@ -589,7 +586,6 @@ function applyLanguage(){
   $('txt_mapTitle').textContent = d.mapTitle;
   $('countVal').textContent = d.countVal(state.collected ? state.collected.length : 0, CHARACTERS.length);
   $('txt_challengeAsk').textContent = d.challengeAsk;
-  $('startChallengeBtn').textContent = d.startChallengeBtn;
   $('exploreBtn').textContent = d.exploreBtn;
   $('certBtnMap').textContent = d.certBtnMap;
   $('leaderboardBtn').textContent = d.leaderboardBtn;
@@ -820,15 +816,19 @@ function chromaKeyFrame(media){
 }
 
 /* ---------- تخزين ---------- */
+function safeKey(name){
+  // مفاتيح التخزين ما تقبل مسافات أو / أو \ أو علامات اقتباس
+  return encodeURIComponent(name).replace(/[%\s]/g, '_').slice(0, 120);
+}
 async function loadProgress(name){
   try{
-    const r = await window.storage.get('progress:'+name, true);
+    const r = await window.storage.get('progress:'+safeKey(name), true);
     if(r && r.value) return JSON.parse(r.value);
   }catch(e){}
   return { name, collected: [], points: 0, startedAt: new Date().toISOString() };
 }
 async function saveProgress(){
-  try{ await window.storage.set('progress:'+state.name, JSON.stringify(state), true); }
+  try{ await window.storage.set('progress:'+safeKey(state.name), JSON.stringify(state), true); }
   catch(e){ console.error('تعذر الحفظ', e); }
 }
 
@@ -850,6 +850,7 @@ $('startBtn').onclick = async () => {
   if(!val){ $('nameInput').focus(); return; }
   state = await loadProgress(val);
   state.name = val;
+  try{ history.replaceState(null, '', '#u=' + encodeURIComponent(val)); }catch(e){}
   buildPosterThumbs();
   showScreen('screen-howto');
   if(howtoVideoURL){
@@ -912,7 +913,7 @@ function speakInstructions(){
 }
 
 $('nameInput').addEventListener('keydown', e=>{ if(e.key==='Enter') $('startBtn').click(); });
-$('switchUser').onclick = (e)=>{ e.preventDefault(); showScreen('screen-login'); };
+$('switchUser').onclick = (e)=>{ e.preventDefault(); try{ history.replaceState(null, '', location.pathname + location.search); }catch(err){} showScreen('screen-login'); };
 
 /* ---------- شاشة البطاقات (عرض فقط، بدون اختيار مباشر) ---------- */
 function renderMap(isFirstRender){
@@ -1029,8 +1030,7 @@ async function renderLeaderboard(){
   }).join('');
 }
 
-/* ---------- تحدي الوقت: 10 دقائق (منفصل الآن عن عد الاستعداد) ---------- */
-$('startChallengeBtn').onclick = () => startChallenge(10);
+/* ---------- تحدي الوقت: 10 دقائق تبدأ تلقائيًا أول ما تُفتح الكاميرا (انظر openScanner) ---------- */
 
 function speakCount(text){
   try{
@@ -1142,6 +1142,9 @@ async function openScanner(){
   $('targetHint').textContent = t('targetHintDefault');
   showScreen('screen-scan');
   $('scanStatus').textContent = t('scanStarting');
+  if(challengeEndAt === null && !gameLocked){
+    startChallenge(10);
+  }
   playReadyCountdown(async ()=>{
     startBgMusic();
     await launchCameraAndAR();
